@@ -116,7 +116,7 @@ class FamireeHelper extends Helper
      */
     public function age($dateString)
     {
-        if (strlen($dateString) == 4) {
+        if (is_string($dateString) && strlen($dateString) == 4) {
             $dateString .= '-12-31';
         }
 
