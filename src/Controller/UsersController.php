@@ -215,7 +215,7 @@ class UsersController extends AppController
                 $this->Flash->error(__('Please verify that the information is correct.'));
             }
         } else {
-            $user->set('p', null);
+            $user->set('p', '');
         }
 
         $this->set(compact('user'));
