@@ -1,7 +1,8 @@
 #  Famiree is a PHP Family Tree
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/travis/malamalca/famiree/master.svg?style=flat-square)](https://travis-ci.org/malamalca/famiree)
+[![CI](https://github.com/malamalca/famiree/actions/workflows/ci.yml/badge.svg)](https://github.com/malamalca/arhint/famiree/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/malamalca/famiree/branch/master/graph/badge.svg?token=x40FDnnbCp)](https://codecov.io/gh/malamalca/famiree)
 [![Total Downloads](https://img.shields.io/packagist/dt/malamalca/famiree.svg?style=flat-square)](https://packagist.org/packages/malamaca/famiree)
 
 Simple open source family tree web application [Famiree](https://famiree.org)
