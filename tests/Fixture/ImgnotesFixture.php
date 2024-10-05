@@ -8,8 +8,6 @@ use Cake\TestSuite\Fixture\TestFixture;
  */
 class ImgnotesFixture extends TestFixture
 {
-    public $import = ['table' => 'imgnotes'];
-
     public $records = [
         [
             'id' => 1,
