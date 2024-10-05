@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Controller;
 
-use App\Controller\ImgnotesController;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
@@ -23,7 +24,7 @@ class ImgnotesControllerTest extends TestCase
         'app.Attachments',
         'app.AttachmentsLinks',
         'app.Profiles',
-        'app.Logs'
+        'app.Logs',
     ];
 
     /**
@@ -33,7 +34,7 @@ class ImgnotesControllerTest extends TestCase
         'User' => [
             'id' => 1,
             'd_n' => 'Test User',
-        ]
+        ],
     ];
 
     /**
@@ -41,7 +42,7 @@ class ImgnotesControllerTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -55,13 +56,13 @@ class ImgnotesControllerTest extends TestCase
      *
      * @return void
      */
-    public function testAdd()
+    public function testAdd(): void
     {
         $this->session(['Auth' => $this->authData]);
 
         $countBefore = TableRegistry::get('Imgnotes')->find()->count();
 
-        $this->post('imgnotes/add', [
+        $this->post('/imgnotes/edit', [
             'user_id' => 1,
             'attachment_id' => 'd372525d-9fb6-4643-bd21-217cb96d7496',
             'profile_id' => 1,
@@ -74,7 +75,7 @@ class ImgnotesControllerTest extends TestCase
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Attachments', 'action' => 'view', 'd372525d-9fb6-4643-bd21-217cb96d7496']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('Imgnotes')->find()->count();
         $this->assertEquals($countBefore + 1, $countAfter);
@@ -91,7 +92,7 @@ class ImgnotesControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('Imgnotes')->find()->count();
 
-        $this->post('imgnotes/edit/1', [
+        $this->post('/imgnotes/edit/1', [
             'id' => 1,
             'user_id' => 1,
             'attachment_id' => 'd372525d-9fb6-4643-bd21-217cb96d7496',
@@ -105,7 +106,7 @@ class ImgnotesControllerTest extends TestCase
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Attachments', 'action' => 'view', 'd372525d-9fb6-4643-bd21-217cb96d7496']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('Imgnotes')->find()->count();
         $this->assertEquals($countBefore, $countAfter);
@@ -125,7 +126,7 @@ class ImgnotesControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('Imgnotes')->find()->count();
 
-        $this->get('imgnotes/delete/1');
+        $this->get('/imgnotes/delete/1');
 
         $this->assertRedirect();
 

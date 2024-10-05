@@ -5,11 +5,9 @@ use Cake\TestSuite\Fixture\TestFixture;
 
 /**
  * PostsFixture
- *
  */
 class PostsFixture extends TestFixture
 {
-
     /**
      * Fields
      *
@@ -41,7 +39,7 @@ class PostsFixture extends TestFixture
      *
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         $this->records = [
             [
@@ -53,7 +51,7 @@ class PostsFixture extends TestFixture
                 'created' => '2019-01-08 14:32:00',
                 'creator_id' => 1,
                 'modified' => '2019-01-08 14:32:00',
-                'modifier_id' => 1
+                'modifier_id' => 1,
             ],
         ];
         parent::init();

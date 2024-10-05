@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -12,7 +13,6 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\AttachmentsTable|\Cake\ORM\Association\BelongsTo $Attachments
  * @property \App\Model\Table\ProfilesTable|\Cake\ORM\Association\BelongsTo $Profiles
- *
  * @method \App\Model\Entity\ImgNote get($primaryKey, $options = [])
  * @method \App\Model\Entity\ImgNote newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\ImgNote[] newEntities(array $data, array $options = [])
@@ -21,19 +21,17 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\ImgNote patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\ImgNote[] patchEntities($entities, array $data, array $options = [])
  * @method \App\Model\Entity\ImgNote findOrCreate($search, callable $callback = null, $options = [])
- *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class ImgnotesTable extends Table
 {
-
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -42,17 +40,17 @@ class ImgnotesTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
-        $this->addBehavior('Loggable', ['excludedProperties' => ['user', 'attachment', 'profile']]);
+        //$this->addBehavior('Loggable', ['excludedProperties' => ['user', 'attachment', 'profile']]);
 
         $this->belongsTo('Creators', [
             'className' => 'Profiles',
-            'foreignKey' => 'user_id'
+            'foreignKey' => 'user_id',
         ]);
         $this->belongsTo('Attachments', [
-            'foreignKey' => 'attachment_id'
+            'foreignKey' => 'attachment_id',
         ]);
         $this->belongsTo('Profiles', [
-            'foreignKey' => 'profile_id'
+            'foreignKey' => 'profile_id',
         ]);
     }
 
@@ -62,32 +60,32 @@ class ImgnotesTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->integer('id')
-            ->allowEmpty('id', 'create');
+            ->allowEmptyString('id', 'create');
 
         $validator
             ->integer('x1')
-            ->allowEmpty('x1');
+            ->allowEmptyString('x1');
 
         $validator
             ->integer('y1')
-            ->allowEmpty('y1');
+            ->allowEmptyString('y1');
 
         $validator
             ->integer('width')
-            ->allowEmpty('width');
+            ->allowEmptyString('width');
 
         $validator
             ->integer('height')
-            ->allowEmpty('height');
+            ->allowEmptyString('height');
 
         $validator
             ->scalar('note')
             ->maxLength('note', 100)
-            ->allowEmpty('note');
+            ->allowEmptyString('note');
 
         return $validator;
     }
@@ -99,7 +97,7 @@ class ImgnotesTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->existsIn(['user_id'], 'Profiles'));
         $rules->add($rules->existsIn(['attachment_id'], 'Attachments'));

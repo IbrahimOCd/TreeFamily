@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
@@ -19,7 +21,6 @@ use Cake\ORM\Entity;
  */
 class Unit extends Entity
 {
-
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -27,7 +28,7 @@ class Unit extends Entity
      * be mass assigned. For security purposes, it is advised to set '*' to false
      * (or remove it), and explicitly make individual fields accessible as needed.
      *
-     * @var array
+     * @var array<string, bool>
      */
     protected $_accessible = [
         'union_id' => true,
@@ -37,6 +38,6 @@ class Unit extends Entity
         'created' => true,
         'modified' => true,
         'union' => true,
-        'profile' => true
+        'profile' => true,
     ];
 }

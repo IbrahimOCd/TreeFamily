@@ -1,14 +1,14 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controller;
 
-use App\Controller\AppController;
 use Cake\ORM\TableRegistry;
 
 /**
  * Posts Controller
  *
  * @property \App\Model\Table\PostsTable $Posts
- *
  * @method \App\Model\Entity\Post[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class PostsController extends AppController
@@ -21,10 +21,6 @@ class PostsController extends AppController
      */
     public function isAuthorized($user)
     {
-        if (in_array($this->getRequest()->getParam('action'), ['edit', 'delete', 'add'])) {
-            return $this->currentUser->get('lvl') <= constant('LVL_EDITOR');
-        }
-
         return true;
     }
 
@@ -35,8 +31,8 @@ class PostsController extends AppController
      */
     public function index()
     {
-        $this->paginate = ['limit' => 10, 'contain' => ['Creators', 'Profiles'], 'order' => ['Posts.created DESC']];
-        $posts = $this->paginate($this->Posts);
+        //$this->paginate = ['limit' => 10, 'contain' => ['Creators', 'Profiles'], 'order' => ['Posts.created DESC']];
+        $posts = $this->paginate($this->Posts, ['finder' => 'paginated']);
 
         $this->set(compact('posts'));
     }
@@ -55,20 +51,10 @@ class PostsController extends AppController
     }
 
     /**
-     * Add method
-     *
-     * @return void
-     */
-    public function add()
-    {
-        $this->setAction('edit');
-    }
-
-    /**
      * Edit method
      *
      * @param string|null $id Post id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @return \Cake\Http\Response|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function edit($id = null)
@@ -76,14 +62,15 @@ class PostsController extends AppController
         if ($id) {
             $post = $this->Posts->get($id, ['contain' => ['PostsLinks']]);
         } else {
-            $post = $this->Posts->newEntity(['contain' => ['AttachmentsLinks']]);
+            $post = $this->Posts->newEmptyEntity();
         }
         if ($this->getRequest()->is(['patch', 'post', 'put'])) {
             $post = $this->Posts->patchEntity($post, $this->getRequest()->getData(), ['PostsLinks']);
             if ($this->Posts->save($post)) {
                 $this->Flash->success(__('The post has been saved.'));
 
-                if ($referer = base64_decode($this->getRequest()->getData('referer', ''))) {
+                $referer = base64_decode($this->getRequest()->getData('referer', ''));
+                if ($referer) {
                     return $this->redirect($referer);
                 } else {
                     return $this->redirect(['action' => 'index']);

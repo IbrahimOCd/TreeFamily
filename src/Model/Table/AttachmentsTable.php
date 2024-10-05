@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
 use ArrayObject;
@@ -6,12 +8,11 @@ use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
 use Cake\Filesystem\Folder;
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
-use Cake\ORM\TableRegistry;
 use Cake\Utility\Text;
 use Cake\Validation\Validator;
+use Laminas\Diactoros\UploadedFile;
 use WideImage\WideImage;
 
 /**
@@ -20,7 +21,6 @@ use WideImage\WideImage;
  * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\AttachmentsLinksTable|\Cake\ORM\Association\HasMany $AttachmentsLinks
  * @property \App\Model\Table\ImgnotesTable|\Cake\ORM\Association\HasMany $Imgnotes
- *
  * @method \App\Model\Entity\Attachment get($primaryKey, $options = [])
  * @method \App\Model\Entity\Attachment newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Attachment[] newEntities(array $data, array $options = [])
@@ -29,19 +29,17 @@ use WideImage\WideImage;
  * @method \App\Model\Entity\Attachment patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Attachment[] patchEntities($entities, array $data, array $options = [])
  * @method \App\Model\Entity\Attachment findOrCreate($search, callable $callback = null, $options = [])
- *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class AttachmentsTable extends Table
 {
-
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -50,11 +48,11 @@ class AttachmentsTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
-        $this->addBehavior('Loggable', ['excludedProperties' => ['user', 'attachments_links', 'imgnotes']]);
+        //$this->addBehavior('Loggable', ['excludedProperties' => ['user', 'attachments_links', 'imgnotes']]);
 
         $this->belongsTo('Creators', [
             'className' => 'Profiles',
-            'foreignKey' => 'user_id'
+            'foreignKey' => 'user_id',
         ]);
         $this->hasMany('AttachmentsLinks', [
             'foreignKey' => 'attachment_id',
@@ -63,7 +61,7 @@ class AttachmentsTable extends Table
         ]);
         $this->hasMany('Imgnotes', [
             'foreignKey' => 'attachment_id',
-            'dependent' => true
+            'dependent' => true,
         ]);
     }
 
@@ -73,64 +71,64 @@ class AttachmentsTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->uuid('id')
-            ->allowEmpty('id', 'create');
+            ->allowEmptyString('id', 'create');
 
         $validator
-            ->allowEmptyFile('filename');
-        $validator->add('filename', [
+            ->allowEmptyFile('attachment');
+        $validator->add('attachment', [
             'mime' => [
-                'rule' => ['mimeType', ['image/jpeg', 'image/png', 'image/gif']]
+                'rule' => ['mimeType', ['image/jpeg', 'image/png', 'image/gif']],
             ],
             'size' => [
-                'rule' => ['fileSize', '<', '5MB']
+                'rule' => ['fileSize', '<', '5MB'],
             ],
         ]);
 
         $validator
             ->scalar('original')
             ->maxLength('original', 255)
-            ->allowEmpty('original');
+            ->allowEmptyString('original');
 
         $validator
             ->scalar('ext')
             ->maxLength('ext', 6)
             ->requirePresence('ext', 'create')
-            ->notEmpty('ext');
+            ->notEmptyString('ext');
 
-        $validator
-            ->scalar('mimetype')
-            ->maxLength('mimetype', 30)
-            ->allowEmpty('mimetype');
+        //$validator
+        //    ->scalar('mimetype')
+        //    ->maxLength('mimetype', 30)
+        //    ->allowEmptyString('mimetype');
 
         $validator
             ->integer('filesize')
-            ->allowEmpty('filesize');
+            ->allowEmptyString('filesize');
 
         $validator
             ->integer('height')
-            ->allowEmpty('height');
+            ->allowEmptyString('height');
 
         $validator
             ->integer('width')
-            ->allowEmpty('width');
+            ->allowEmptyString('width');
 
         $validator
             ->scalar('title')
             ->maxLength('title', 100)
-            ->allowEmpty('title');
+            ->allowEmptyString('title');
 
         $validator
             ->scalar('description')
-            ->allowEmpty('description');
+            ->allowEmptyString('description');
 
         $validator
             ->scalar('checksum')
             ->maxLength('checksum', 32)
-            ->allowEmpty('checksum');
+            ->allowEmptyString('checksum');
 
         return $validator;
     }
@@ -142,7 +140,7 @@ class AttachmentsTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): RulesChecker
     {
         //$rules->add($rules->existsIn(['user_id'], 'Users'));
 
@@ -152,22 +150,24 @@ class AttachmentsTable extends Table
     /**
      * beforeMarshal event handler
      *
-     * @param Event $event Event object
-     * @param ArrayObject $data Data object
-     * @param ArrayObject $options Options
+     * @param \Cake\Event\Event $event Event object
+     * @param \ArrayObject $data Data object
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function beforeMarshal(Event $event, ArrayObject $data, ArrayObject $options)
     {
-        if (!empty($data['filename']['tmp_name']) && file_exists($data['filename']['tmp_name'])) {
-            $data['original'] = $data['filename']['name'];
-            $data['mimetype'] = $data['filename']['type'];
-            $data['filesize'] = $data['filename']['size'];
-            $data['checksum'] = md5_file($data['filename']['tmp_name']);
-            $data['ext'] = strtolower(pathinfo($data['filename']['name'], PATHINFO_EXTENSION));
+        if (!empty($data['attachment']) && $data['attachment'] instanceof \Laminas\Diactoros\UploadedFile) {
+            $attachment = $data['attachment'];
+            $data['filename'] = $attachment->getClientFilename();
+            $data['original'] = $attachment->getClientFilename();
+            $data['mimetype'] = $attachment->getClientMediaType();
+            $data['filesize'] = $attachment->getSize();
+            $data['checksum'] = md5_file($attachment->getStream()->getMetadata('uri'));
+            $data['ext'] = strtolower(pathinfo($attachment->getClientFilename(), PATHINFO_EXTENSION));
 
-            if (substr($data['mimetype'], 0, 5) == 'image') {
-                $imageInfo = getimagesize($data['filename']['tmp_name']);
+            if (substr($attachment->getClientMediaType(), 0, 5) == 'image') {
+                $imageInfo = getimagesize($attachment->getStream()->getMetadata('uri'));
                 $data['width'] = $imageInfo[0];
                 $data['height'] = $imageInfo[1];
             }
@@ -177,9 +177,9 @@ class AttachmentsTable extends Table
     /**
      * afterDelete event handler
      *
-     * @param Event $event Event object
-     * @param EntityInterface $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \Cake\Event\Event $event Event object
+     * @param \Cake\Datasource\EntityInterface $entity Entity object
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function afterDelete(Event $event, EntityInterface $entity, ArrayObject $options)
@@ -214,98 +214,34 @@ class AttachmentsTable extends Table
      * Process uploaded attachment
      *
      * @param \App\Model\Entity\Attachment $entity Attachment entity
-     * @param string $tmpFilename Temporary file name
-     * @param string $method Move file method - 'uploaded' or 'existing'
+     * @param \Laminas\Diactoros\UploadedFile $uploadedFile Temporary file name
      * @return void
      */
-    public function processUpload($entity, $tmpFilename, $method = 'uploaded')
+    public function processUpload($entity, \Laminas\Diactoros\UploadedFile $uploadedFile)
     {
-        $checkExists = ($method == 'uploaded') ? is_uploaded_file($tmpFilename) : file_exists($tmpFilename);
-        if ($checkExists) {
-            $image = WideImage::loadFromFile($tmpFilename, $entity->ext);
-            if (!empty($image)) {
-                $dir = new Folder(Configure::read('sourceFolders.attachments') . $entity->id, true);
+        $image = WideImage::loadFromFile($uploadedFile->getStream()->getMetadata('uri'), $entity->ext);
+        if (!empty($image)) {
+            $dir = new Folder(Configure::read('sourceFolders.attachments') . $entity->id, true);
 
-                if (file_exists($dir->path . DS . 'original')) {
-                    unlink($dir->path . DS . 'original');
-                }
-
-                $moveResult = ($method == 'uploaded') ? move_uploaded_file($tmpFilename, $dir->path . DS . 'original') : rename($tmpFilename, $dir->path . DS . 'original');
-                if ($moveResult) {
-                    $this->processOriginalImage($image, $entity->ext, $entity->id);
-                    /*$image->resize(640, 480, 'inside')->saveToFile($dir->path . DS . 'large', $entity->ext);
-                    $image->resize(200, 200, 'inside')->saveToFile($dir->path . DS . 'medium', $entity->ext);
-
-                    $thumb = $image->resize(75, 75, 'outside');
-                    if ($thumb->getWidth() > $thumb->getHeight()) {
-                        $thumb = $thumb->crop(floor(($thumb->getWidth() - 75) / 2), 0, 75, 75);
-                    } elseif ($thumb->getWidth() < $thumb->getHeight()) {
-                        $thumb = $thumb->crop(0, floor(($thumb->getHeight() - 75) / 2), 75, 75);
-                    }
-                    $thumb->saveToFile(Configure::read('sourceFolders.thumbs') . $entity->id . '.png', null, 9);*/
-                }
-                unset($image);
+            if (file_exists($dir->path . DS . 'original')) {
+                unlink($dir->path . DS . 'original');
             }
+
+            $uploadedFile->moveTo($dir->path . DS . 'original');
+            if (is_file($dir->path . DS . 'original')) {
+                $image->resize(640, 480, 'inside')->saveToFile($dir->path . DS . 'large', $entity->ext);
+                $image->resize(200, 200, 'inside')->saveToFile($dir->path . DS . 'medium', $entity->ext);
+
+                $thumb = $image->resize(75, 75, 'outside');
+                if ($thumb->getWidth() > $thumb->getHeight()) {
+                    $thumb = $thumb->crop(floor(($thumb->getWidth() - 75) / 2), 0, 75, 75);
+                } elseif ($thumb->getWidth() < $thumb->getHeight()) {
+                    $thumb = $thumb->crop(0, floor(($thumb->getHeight() - 75) / 2), 75, 75);
+                }
+                $thumb->saveToFile(Configure::read('sourceFolders.thumbs') . $entity->id . '.png', null, 9);
+            }
+            unset($image);
         }
-    }
-
-    /**
-     * Create large+medium images and thumbnail
-     *
-     * @param \WideImage\Image $original Original image.
-     * @param string $ext Image extension
-     * @param string $id Attachment id
-     * @return void
-     */
-    public function processOriginalImage($original, $ext, $id)
-    {
-        $dir = new Folder(Configure::read('sourceFolders.attachments') . $id, true);
-
-        $original->resize(640, 480, 'inside')->saveToFile($dir->path . DS . 'large', $ext);
-        $original->resize(200, 200, 'inside')->saveToFile($dir->path . DS . 'medium', $ext);
-
-        $thumb = $original->resize(75, 75, 'outside');
-        if ($thumb->getWidth() > $thumb->getHeight()) {
-            $thumb = $thumb->crop(floor(($thumb->getWidth() - 75) / 2), 0, 75, 75);
-        } elseif ($thumb->getWidth() < $thumb->getHeight()) {
-            $thumb = $thumb->crop(0, floor(($thumb->getHeight() - 75) / 2), 75, 75);
-        }
-        $thumb->saveToFile(Configure::read('sourceFolders.thumbs') . $id . '.png', null, 9);
-    }
-
-    /**
-     * Crop attachment
-     *
-     * @param \App\Model\Entity\Attachment $attachment Attachment entity.
-     * @param int $cropX X position.
-     * @param int $cropY Y position.
-     * @param int $cropW Width.
-     * @param int $cropH Height.
-     * @return bool
-     */
-    public function crop($attachment, $cropX, $cropY, $cropW, $cropH)
-    {
-        $filenameOriginal = Configure::read('sourceFolders.attachments') . DS . $attachment->id . DS . 'original';
-        if (file_exists($filenameOriginal)) {
-            $largeSize = $this->getImageSize($attachment->id, 'large');
-            $originalSize = $this->getImageSize($attachment->id, 'original');
-
-            $scaleFactor = $originalSize['width'] / $largeSize['width'];
-            $x = (int)round($cropX * $scaleFactor);
-            $y = (int)round($cropY * $scaleFactor);
-            $width = (int)round($cropW * $scaleFactor);
-            $height = (int)round($cropH * $scaleFactor);
-
-            $image = WideImage::loadFromFile($filenameOriginal, $attachment->ext);
-            $image = $image->crop($x, $y, $width, $height);
-            $image->saveToFile($filenameOriginal, $attachment->ext);
-
-            $this->processOriginalImage($image, $attachment->ext, $attachment->id);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -316,8 +252,8 @@ class AttachmentsTable extends Table
      */
     public function createFromImgnote($imgnote)
     {
-        $filenameOriginal = Configure::read('sourceFolders.attachments') . DS . $imgnote->attachment_id . DS . 'original';
-        if (file_exists($filenameOriginal)) {
+        $fileOriginal = Configure::read('sourceFolders.attachments') . DS . $imgnote->attachment_id . DS . 'original';
+        if (file_exists($fileOriginal)) {
             $attachment = $this->get($imgnote->attachment_id);
 
             $largeSize = $this->getImageSize($imgnote->attachment_id, 'large');
@@ -330,7 +266,7 @@ class AttachmentsTable extends Table
             $height = (int)round($imgnote->height * $scaleFactor);
 
             $tmpfname = tempnam(defined('TMP') ? constant('TMP') : null, 'fam');
-            $image = WideImage::loadFromFile($filenameOriginal, $attachment->ext);
+            $image = WideImage::loadFromFile($fileOriginal, $attachment->ext);
             if (!empty($image)) {
                 $image = $image->crop($x, $y, $width, $height);
                 $image->saveToFile($tmpfname, $attachment->ext);
@@ -350,12 +286,20 @@ class AttachmentsTable extends Table
                     'attachments_links' => [0 => [
                         'attachment_id' => null,
                         'class' => 'Profile',
-                        'foreign_id' => $imgnote->profile_id
-                    ]]
+                        'foreign_id' => $imgnote->profile_id,
+                    ]],
                 ], ['associated' => ['AttachmentsLinks']]);
 
+                $jpgAttachment = new UploadedFile(
+                    $tmpfname,
+                    filesize($tmpfname),
+                    UPLOAD_ERR_OK,
+                    $croppedAttachment->original,
+                    $croppedAttachment->mimetype
+                );
+
                 if ($this->save($croppedAttachment, ['associated' => ['AttachmentsLinks']])) {
-                    $this->processUpload($croppedAttachment, $tmpfname, 'existing');
+                    $this->processUpload($croppedAttachment, $jpgAttachment);
 
                     return $croppedAttachment;
                 }
@@ -384,7 +328,8 @@ class AttachmentsTable extends Table
 
         $filename = $folder . DS . $attachmentId . DS . $size;
         if (file_exists($filename)) {
-            if ($sizes = getimagesize($filename)) {
+            $sizes = getimagesize($filename);
+            if ($sizes) {
                 $ret = [];
                 $ret['width'] = $sizes[0];
                 $ret['height'] = $sizes[1];

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\ProfilesTable;
@@ -10,7 +12,6 @@ use Cake\TestSuite\TestCase;
  */
 class ProfilesTableTest extends TestCase
 {
-
     /**
      * Test subject
      *
@@ -26,7 +27,7 @@ class ProfilesTableTest extends TestCase
     public $fixtures = [
         'app.Profiles',
         'app.Imgnotes',
-        'app.Units'
+        'app.Units',
     ];
 
     /**
@@ -34,7 +35,7 @@ class ProfilesTableTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $config = TableRegistry::getTableLocator()->exists('Profiles') ? [] : ['className' => ProfilesTable::class];
@@ -46,7 +47,7 @@ class ProfilesTableTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         unset($this->Profiles);
 

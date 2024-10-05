@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\LogsTable;
@@ -10,7 +12,6 @@ use Cake\TestSuite\TestCase;
  */
 class LogsTableTest extends TestCase
 {
-
     /**
      * Test subject
      *
@@ -25,7 +26,7 @@ class LogsTableTest extends TestCase
      */
     public $fixtures = [
         'app.Logs',
-        'app.Profiles'
+        'app.Profiles',
     ];
 
     /**
@@ -33,7 +34,7 @@ class LogsTableTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $config = TableRegistry::getTableLocator()->exists('Logs') ? [] : ['className' => LogsTable::class];
@@ -45,7 +46,7 @@ class LogsTableTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         unset($this->Logs);
 

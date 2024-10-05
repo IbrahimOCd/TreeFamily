@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
-use App\Model\Behavior\LoggableBehavior;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -13,7 +14,6 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\CreatorsTable|\Cake\ORM\Association\BelongsTo $Creators
  * @property \App\Model\Table\PostsLinksTable|\Cake\ORM\Association\HasMany $PostsLinks
  * @property \App\Model\Table\ProfilesTable|\Cake\ORM\Association\belongsToMany $Profiles
- *
  * @method \App\Model\Entity\Post get($primaryKey, $options = [])
  * @method \App\Model\Entity\Post newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Post[] newEntities(array $data, array $options = [])
@@ -22,19 +22,17 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\Post patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Post[] patchEntities($entities, array $data, array $options = [])
  * @method \App\Model\Entity\Post findOrCreate($search, callable $callback = null, $options = [])
- *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class PostsTable extends Table
 {
-
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -43,11 +41,11 @@ class PostsTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
-        $this->addBehavior('Loggable', ['excludedProperties' => ['creator', 'modifier', 'posts_links']]);
+        //$this->addBehavior('Loggable', ['excludedProperties' => ['creator', 'modifier', 'posts_links']]);
 
         $this->belongsTo('Creators', [
             'className' => 'Profiles',
-            'foreignKey' => 'creator_id'
+            'foreignKey' => 'creator_id',
         ]);
         $this->hasMany('PostsLinks', [
             'foreignKey' => 'post_id',
@@ -60,8 +58,24 @@ class PostsTable extends Table
             'foreignKey' => 'post_id',
             'targetForeignKey' => 'foreign_id',
             'conditions' => ['PostsLinks.class' => 'Profile'],
-            'dependent' => true
+            'dependent' => true,
         ]);
+    }
+
+    /**
+     * Finder function for posts pagination
+     *
+     * @param \Cake\ORM\Query $q Query instance.
+     * @return \Cake\ORM\Query
+     */
+    public function findPaginated(Query $q)
+    {
+        $q
+            ->contain(['Creators', 'Profiles'])
+            ->order(['Posts.created DESC'])
+            ->limit(10);
+
+        return $q;
     }
 
     /**
@@ -70,20 +84,20 @@ class PostsTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->integer('id')
-            ->allowEmpty('id', 'create');
+            ->allowEmptyString('id', 'create');
 
         $validator
             ->scalar('title')
             ->maxLength('title', 100)
-            ->allowEmpty('title');
+            ->allowEmptyString('title');
 
         $validator
             ->scalar('body')
-            ->allowEmpty('body');
+            ->allowEmptyString('body');
 
         return $validator;
     }
@@ -95,7 +109,7 @@ class PostsTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): RulesChecker
     {
         return $rules;
     }

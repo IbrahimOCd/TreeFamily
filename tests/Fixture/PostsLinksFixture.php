@@ -5,11 +5,9 @@ use Cake\TestSuite\Fixture\TestFixture;
 
 /**
  * PostsLinksFixture
- *
  */
 class PostsLinksFixture extends TestFixture
 {
-
     /**
      * Fields
      *
@@ -36,14 +34,14 @@ class PostsLinksFixture extends TestFixture
      *
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         $this->records = [
             [
                 'id' => 1,
                 'post_id' => 1,
                 'class' => 'Lorem ipsum dolor ',
-                'foreign_id' => 1
+                'foreign_id' => 1,
             ],
         ];
         parent::init();

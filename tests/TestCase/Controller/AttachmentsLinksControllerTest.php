@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Controller;
 
-use App\Controller\AttachmentsLinksController;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
@@ -23,7 +24,7 @@ class AttachmentsLinksControllerTest extends TestCase
         'app.Attachments',
         'app.AttachmentsLinks',
         'app.Profiles',
-        'app.Logs'
+        'app.Logs',
     ];
 
     /**
@@ -33,7 +34,7 @@ class AttachmentsLinksControllerTest extends TestCase
         'User' => [
             'id' => 1,
             'd_n' => 'Test User',
-        ]
+        ],
     ];
 
     /**
@@ -41,7 +42,7 @@ class AttachmentsLinksControllerTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -55,21 +56,21 @@ class AttachmentsLinksControllerTest extends TestCase
      *
      * @return void
      */
-    public function testAdd()
+    public function testAdd(): void
     {
         $this->session(['Auth' => $this->authData]);
 
         $countBefore = TableRegistry::get('AttachmentsLinks')->find()->count();
 
-        $this->post('attachments-links/add', [
+        $this->post('/attachments-links/edit', [
             'attachment_id' => 'd372525d-9fb6-4643-bd21-217cb96d7496',
             'class' => 'Profile',
-            'foreign_id' => '2'
+            'foreign_id' => '2',
         ]);
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Attachments', 'action' => 'view', 'd372525d-9fb6-4643-bd21-217cb96d7496']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('AttachmentsLinks')->find()->count();
         $this->assertEquals($countBefore + 1, $countAfter);
@@ -86,15 +87,15 @@ class AttachmentsLinksControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('AttachmentsLinks')->find()->count();
 
-        $this->post('attachments-links/edit/2', [
+        $this->post('/attachments-links/edit/2', [
             'attachment_id' => 'd372525d-9fb6-4643-bd21-217cb96d7496',
             'class' => 'Profile',
-            'foreign_id' => '2'
+            'foreign_id' => '2',
         ]);
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Attachments', 'action' => 'view', 'd372525d-9fb6-4643-bd21-217cb96d7496']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('AttachmentsLinks')->find()->count();
         $this->assertEquals($countBefore, $countAfter);
@@ -111,7 +112,7 @@ class AttachmentsLinksControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('AttachmentsLinks')->find()->count();
 
-        $this->get('attachments-links/delete/2');
+        $this->get('/attachments-links/delete/2');
 
         $this->assertRedirect();
 

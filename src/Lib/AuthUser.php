@@ -1,17 +1,18 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Lib;
 
 use ArrayAccess;
-use Cake\ORM\TableRegistry;
 
 class AuthUser implements ArrayAccess
 {
-    const GLOBAL_ROLE_ROOT = 2;
+    public const GLOBAL_ROLE_ROOT = 2;
 
-    const PROJECT_ROLE_OWNER = 2;
-    const PROJECT_ROLE_ADMIN = 5;
-    const PROJECT_ROLE_EDITOR = 7;
-    const PROJECT_ROLE_READER = 10;
+    public const PROJECT_ROLE_OWNER = 2;
+    public const PROJECT_ROLE_ADMIN = 5;
+    public const PROJECT_ROLE_EDITOR = 7;
+    public const PROJECT_ROLE_READER = 10;
 
     private $container = [];
 
@@ -20,7 +21,7 @@ class AuthUser implements ArrayAccess
      *
      * @param array $userArray Array returned by Auth::user().
      * @access public
-     * @return void
+     * @return mixed
      */
     public function __construct($userArray)
     {
@@ -62,18 +63,18 @@ class AuthUser implements ArrayAccess
      */
     public function get($offset)
     {
-        return isset($this->container[$offset]) ? $this->container[$offset] : null;
+        return $this->container[$offset] ?? null;
     }
 
     /**
      * ArrayAccess::offsetSet()
      *
-     * @param string $offset Array offset.
+     * @param mixed $offset Array offset.
      * @param mixed $value Array element value.
      * @link http://php.net/manual/en/arrayaccess.offsetset.php
-     * @return mixed
+     * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         if (empty($offset)) {
             $this->container[] = $value;
@@ -89,7 +90,7 @@ class AuthUser implements ArrayAccess
      * @link http://php.net/manual/en/arrayaccess.offsetexists.php
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->container[$offset]);
     }
@@ -97,11 +98,11 @@ class AuthUser implements ArrayAccess
     /**
      * ArrayAccess::offsetUnset()
      *
-     * @param string $offset Array offset.
+     * @param mixed $offset Array offset.
      * @link http://php.net/manual/en/arrayaccess.offsetunset.php
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->container[$offset]);
     }
@@ -111,10 +112,10 @@ class AuthUser implements ArrayAccess
      *
      * @param string $offset Array offset.
      * @link http://php.net/manual/en/arrayaccess.offsetget.php
-     * @return bool
+     * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
-        return isset($this->container[$offset]) ? $this->container[$offset] : null;
+        return $this->container[$offset] ?? null;
     }
 }

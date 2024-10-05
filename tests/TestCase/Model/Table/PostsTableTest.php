@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\PostsTable;
@@ -10,7 +12,6 @@ use Cake\TestSuite\TestCase;
  */
 class PostsTableTest extends TestCase
 {
-
     /**
      * Test subject
      *
@@ -26,7 +27,7 @@ class PostsTableTest extends TestCase
     public $fixtures = [
         'app.Posts',
         'app.Profiles',
-        'app.PostsLinks'
+        'app.PostsLinks',
     ];
 
     /**
@@ -34,7 +35,7 @@ class PostsTableTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $config = TableRegistry::getTableLocator()->exists('Posts') ? [] : ['className' => PostsTable::class];
@@ -46,7 +47,7 @@ class PostsTableTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         unset($this->Posts);
 

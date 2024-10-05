@@ -5,11 +5,9 @@ use Cake\TestSuite\Fixture\TestFixture;
 
 /**
  * AttachmentsFixture
- *
  */
 class AttachmentsFixture extends TestFixture
 {
-
     /**
      * Fields
      *
@@ -46,7 +44,7 @@ class AttachmentsFixture extends TestFixture
      *
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         $this->records = [
             [
@@ -63,7 +61,7 @@ class AttachmentsFixture extends TestFixture
                 'description' => null,
                 'checksum' => null,
                 'created' => '2019-01-08 18:34:10',
-                'modified' => '2019-01-08 18:34:10'
+                'modified' => '2019-01-08 18:34:10',
             ],
             [
                 'id' => 'd372525d-9fb6-4643-bd21-217cb96d7496',
@@ -79,7 +77,7 @@ class AttachmentsFixture extends TestFixture
                 'description' => null,
                 'checksum' => '4a3992be185886220dc46207e3a948f9',
                 'created' => '2019-01-08 18:34:10',
-                'modified' => '2019-01-08 18:34:10'
+                'modified' => '2019-01-08 18:34:10',
             ],
         ];
         parent::init();

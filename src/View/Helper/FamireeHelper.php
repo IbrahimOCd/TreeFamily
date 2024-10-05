@@ -1,8 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace App\View\Helper;
 
 use Cake\I18n\FrozenDate;
-use Cake\Utility\Text;
 use Cake\View\Helper;
 
 /**
@@ -35,7 +36,7 @@ class FamireeHelper extends Helper
      * @param array $config Config array.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -47,7 +48,7 @@ class FamireeHelper extends Helper
             5 => __('Gray'),
             6 => __('Red'),
             0 => __('None'),
-            -1 => __('Other')
+            -1 => __('Other'),
         ];
 
         $this->eyeColors = [
@@ -57,7 +58,7 @@ class FamireeHelper extends Helper
             4 => __('Grey'),
             5 => __('Green'),
             6 => __('Hazel'),
-            -1 => __('Other')
+            -1 => __('Other'),
         ];
     }
 
@@ -100,7 +101,8 @@ class FamireeHelper extends Helper
         $_format = 'MMMM';
 
         for ($month = 1; $month < 13; $month++) {
-            $ret[$month] = (new FrozenDate('2018-' . str_pad((string)$month, 2, '0', STR_PAD_LEFT) . '-01'))->i18nFormat($_format);
+            $ret[$month] = (new FrozenDate('2018-' . str_pad((string)$month, 2, '0', STR_PAD_LEFT) . '-01'))
+                ->i18nFormat($_format);
         }
 
         return $ret;
@@ -144,7 +146,11 @@ class FamireeHelper extends Helper
     public function link($title, $url = null, $options = [], $confirmMessage = false)
     {
         if (preg_match('/\[(.*)\]/', $title, $matches)) {
-            $link_element = $this->Html->link($matches[1], $url, array_merge((array)$options, ['confirm' => $confirmMessage]));
+            $link_element = $this->Html->link(
+                $matches[1],
+                $url,
+                array_merge((array)$options, ['confirm' => $confirmMessage])
+            );
 
             return str_replace($matches[0], $link_element, $title);
         } else {
@@ -200,7 +206,7 @@ class FamireeHelper extends Helper
         $pee = preg_replace('!(</' . $allblocks . '>)!', "$1\n\n", $pee);
         $pee = str_replace(["\r\n", "\r"], "\n", $pee); // cross-platform NL
         if (strpos($pee, '<object') !== false) {
-            $pee = preg_replace('|\s*<param([^>]*)>\s*|', "<param$1>", $pee);
+            $pee = preg_replace('|\s*<param([^>]*)>\s*|', '<param$1>', $pee);
             $pee = preg_replace('|\s*</embed>\s*|', '</embed>', $pee);
         }
         //$pee = preg_replace("/\n\n+/", "\n\n", $pee); // take care of duplicates
@@ -216,31 +222,31 @@ class FamireeHelper extends Helper
         $pee = preg_replace('|<p>\s*</p>|', '<br />', $pee);
         $pee = preg_replace(
             '!<p>([^<]+)</(div|address|form)>!',
-            "<p>$1</p></$2>",
+            '<p>$1</p></$2>',
             $pee
         );
         $pee = preg_replace(
             '!<p>\s*(</?' . $allblocks . '[^>]*>)\s*</p>!',
-            "$1",
+            '$1',
             $pee
         ); // don't pee all over a tag
-        $pee = preg_replace("|<p>(<li.+?)</p>|", "$1", $pee); // nested lists
-        $pee = preg_replace('|<p><blockquote([^>]*)>|i', "<blockquote$1><p>", $pee);
+        $pee = preg_replace('|<p>(<li.+?)</p>|', '$1', $pee); // nested lists
+        $pee = preg_replace('|<p><blockquote([^>]*)>|i', '<blockquote$1><p>', $pee);
         $pee = str_replace('</blockquote></p>', '</p></blockquote>', $pee);
-        $pee = preg_replace('!<p>\s*(</?' . $allblocks . '[^>]*>)!', "$1", $pee);
-        $pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*</p>!', "$1", $pee);
+        $pee = preg_replace('!<p>\s*(</?' . $allblocks . '[^>]*>)!', '$1', $pee);
+        $pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*</p>!', '$1', $pee);
         if ($br) {
             $pee = preg_replace_callback(
                 '/<(script|style).*?<\/\\1>/s',
                 function ($matches) {
-                    return str_replace("\n", "<PreserveNewline />", $matches[0]);
+                    return str_replace("\n", '<PreserveNewline />', $matches[0]);
                 },
                 $pee
             );
             $pee = preg_replace('|(?<!<br />)\s*\n|', "<br />\n", $pee);
             $pee = str_replace('<PreserveNewline />', "\n", $pee);
         }
-        $pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*<br />!', "$1", $pee);
+        $pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*<br />!', '$1', $pee);
         $pee = preg_replace(
             '!<br />(\s*</?(?:p|li|div|dl|dd|dt|th|pre|td|ul|ol)[^>]*>)!',
             '$1',
@@ -267,7 +273,7 @@ class FamireeHelper extends Helper
     public static function cleanPre($matches)
     {
         if (is_array($matches)) {
-            $text = $matches[1] . $matches[2] . "</pre>";
+            $text = $matches[1] . $matches[2] . '</pre>';
         } else {
             $text = $matches;
         }
