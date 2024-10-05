@@ -1,19 +1,18 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controller;
 
-use App\Controller\AppController;
 use Cake\ORM\TableRegistry;
 
 /**
  * Imgnotes Controller
  *
  * @property \App\Model\Table\ImgnotesTable $Imgnotes
- *
  * @method \App\Model\Entity\Imgnote[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class ImgnotesController extends AppController
 {
-
     /**
      * isAuthorized hook method.
      *
@@ -22,28 +21,14 @@ class ImgnotesController extends AppController
      */
     public function isAuthorized($user)
     {
-        if (in_array($this->getRequest()->getParam('action'), ['edit', 'delete', 'add'])) {
-            return $this->currentUser->get('lvl') <= constant('LVL_EDITOR');
-        }
-
         return true;
-    }
-
-    /**
-     * Add method
-     *
-     * @return void
-     */
-    public function add()
-    {
-        $this->setAction('edit');
     }
 
     /**
      * Edit method
      *
      * @param string|null $id Imgnote id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @return \Cake\Http\Response|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function edit($id = null)
@@ -51,19 +36,22 @@ class ImgnotesController extends AppController
         if ($id) {
             $imgnote = $this->Imgnotes->get($id);
         } else {
-            $imgnote = $this->Imgnotes->newEntity();
+            $imgnote = $this->Imgnotes->newEmptyEntity();
         }
         if ($this->getRequest()->is(['patch', 'post', 'put'])) {
             $imgnote = $this->Imgnotes->patchEntity($imgnote, $this->getRequest()->getData());
 
-            if ($result = $this->Imgnotes->save($imgnote)) {
+            if ($this->Imgnotes->save($imgnote)) {
                 /** @var \App\Model\Table\AttachmentsLinksTable $AttachmentsLinksTable */
                 $AttachmentsLinksTable = TableRegistry::get('AttachmentsLinks');
                 if ($this->getRequest()->getData('crop_to_new')) {
                     /** @var \App\Model\Table\AttachmentsTable $AttachmentsTable */
                     $AttachmentsTable = TableRegistry::get('Attachments');
+
                     /** @var \App\Model\Entity\Attachment $attachment */
-                    if ($attachment = $AttachmentsTable->createFromImgnote($imgnote)) {
+                    $attachment = $AttachmentsTable->createFromImgnote($imgnote);
+
+                    if ($attachment) {
                         $AttachmentsLinksTable->linkProfile($imgnote->profile_id, $attachment->id);
                     }
                 } else {
@@ -71,13 +59,15 @@ class ImgnotesController extends AppController
                 }
                 $this->Flash->success(__('The imgnote has been saved.'));
 
-                if ($referer = base64_decode($this->getRequest()->getData('referer', ''))) {
+                $referer = base64_decode($this->getRequest()->getData('referer', ''));
+                if ($referer) {
                     return $this->redirect($referer);
                 } else {
-                    return $this->redirect(['controller' => 'Attachments', 'action' => 'view', $imgnote->attachment_id]);
+                    return $this->redirect(
+                        ['controller' => 'Attachments', 'action' => 'view', $imgnote->attachment_id]
+                    );
                 }
             }
-            dd($imgnote);
             $this->Flash->error(__('The imgnote could not be saved. Please, try again.'));
         }
 

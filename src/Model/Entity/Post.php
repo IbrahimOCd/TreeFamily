@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
@@ -23,7 +25,6 @@ use Cake\ORM\Entity;
  */
 class Post extends Entity
 {
-
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -31,7 +32,7 @@ class Post extends Entity
      * be mass assigned. For security purposes, it is advised to set '*' to false
      * (or remove it), and explicitly make individual fields accessible as needed.
      *
-     * @var array
+     * @var array<string, bool>
      */
     protected $_accessible = [
         'blog_id' => true,
@@ -45,6 +46,6 @@ class Post extends Entity
 
         'creator' => true,
         'modifier' => true,
-        'posts_links' => true
+        'posts_links' => true,
     ];
 }

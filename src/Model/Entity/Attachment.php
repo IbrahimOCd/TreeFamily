@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Entity;
 
 use Cake\Core\Configure;
@@ -28,7 +30,6 @@ use Cake\ORM\Entity;
  */
 class Attachment extends Entity
 {
-
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -36,7 +37,7 @@ class Attachment extends Entity
      * be mass assigned. For security purposes, it is advised to set '*' to false
      * (or remove it), and explicitly make individual fields accessible as needed.
      *
-     * @var array
+     * @var array<string, bool>
      */
     protected $_accessible = [
         'user_id' => true,
@@ -55,7 +56,7 @@ class Attachment extends Entity
 
         'user' => true,
         'attachments_links' => true,
-        'imgnotes' => true
+        'imgnotes' => true,
     ];
 
     /**
@@ -75,10 +76,14 @@ class Attachment extends Entity
 
         $filename = $folder . DS . $this->id . DS . $size;
         if (file_exists($filename)) {
-            if ($sizes = getimagesize($filename)) {
-                $ret = [];
-                $ret['width'] = $sizes[0];
-                $ret['height'] = $sizes[1];
+            try {
+                $sizes = getimagesize($filename);
+                if ($sizes) {
+                    $ret = [];
+                    $ret['width'] = $sizes[0];
+                    $ret['height'] = $sizes[1];
+                }
+            } catch (\Exception $e) {
             }
         }
 

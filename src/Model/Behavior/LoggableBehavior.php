@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Behavior;
 
 use ArrayObject;
@@ -12,27 +14,16 @@ class LoggableBehavior extends Behavior
 {
     protected $_defaultConfig = [
         'excludedProperties' => [
-            'created', 'modified'
-        ]
+            'created', 'modified',
+        ],
     ];
-
-    /**
-     * Initialize function
-     *
-     * @param array $config Config
-     * @return void
-     */
-    public function initialize(array $config)
-    {
-        // Some initialization code here
-    }
 
     /**
      * afterSave event handler
      *
-     * @param Event $event Event object
-     * @param EntityInterface $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \Cake\Event\Event $event Event object
+     * @param \Cake\Datasource\EntityInterface $entity Entity object
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function afterSave(Event $event, EntityInterface $entity, ArrayObject $options)
@@ -44,37 +35,37 @@ class LoggableBehavior extends Behavior
 
         $packed = [];
         if ($action == 'add') {
-            $changes = $entity->extract($entity->visibleProperties());
+            $changes = $entity->extract($entity->getVisible());
             $changes = array_diff_key($changes, array_flip($this->_config['excludedProperties']));
 
             foreach ($changes as $property => $value) {
                 $packed[$property] = [
-                    'value' => $entity->get($property)
+                    'value' => $entity->get($property),
                 ];
             }
         }
 
         if ($action == 'edit') {
-            $changes = $entity->extractOriginalChanged($entity->visibleProperties());
+            $changes = $entity->extractOriginalChanged($entity->getVisible());
             $changes = array_diff_key($changes, array_flip($this->_config['excludedProperties']));
 
             if (!empty($changes)) {
                 foreach ($changes as $property => $value) {
                     $packed[$property] = [
                         'old' => $value,
-                        'value' => $entity->get($property)
+                        'value' => $entity->get($property),
                     ];
                 }
             }
         }
         if (!empty($packed)) {
             $log = TableRegistry::get('Logs')->newEntity([
-                'title' => $entity->get($this->getTable()->getDisplayField()),
+                'title' => $entity->get($this->table()->getDisplayField()),
                 'class' => $entityClass,
                 'foreign_id' => $entity->id,
                 'action' => $action,
                 'user_id' => (new Session())->read('Auth.User.id'),
-                'change' => serialize($packed)
+                'change' => serialize($packed),
             ]);
 
             TableRegistry::get('Logs')->save($log);
@@ -84,9 +75,9 @@ class LoggableBehavior extends Behavior
     /**
      * afterDelete event handler
      *
-     * @param Event $event Event object
-     * @param EntityInterface $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \Cake\Event\Event $event Event object
+     * @param \Cake\Datasource\EntityInterface $entity Entity object
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function afterDelete(Event $event, EntityInterface $entity, ArrayObject $options)
@@ -96,24 +87,24 @@ class LoggableBehavior extends Behavior
 
         $action = 'delete';
 
-        $changes = $entity->extract($entity->visibleProperties());
+        $changes = $entity->extract($entity->getVisible());
         $changes = array_diff_key($changes, array_flip($this->_config['excludedProperties']));
 
         $packed = [];
         foreach ($changes as $property => $value) {
             $packed[$property] = [
-                'value' => $entity->get($property)
+                'value' => $entity->get($property),
             ];
         }
 
         if (!empty($packed)) {
             $log = TableRegistry::get('Logs')->newEntity([
-                'title' => $entity->get($this->getTable()->getDisplayField()),
+                'title' => $entity->get($this->table()->getDisplayField()),
                 'class' => $entityClass,
                 'foreign_id' => $entity->id,
                 'action' => $action,
                 'user_id' => (new Session())->read('Auth.User.id'),
-                'change' => serialize($packed)
+                'change' => serialize($packed),
             ]);
 
             TableRegistry::get('Logs')->save($log);

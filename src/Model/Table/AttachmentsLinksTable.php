@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
 use ArrayObject;
 use Cake\Event\Event;
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -14,7 +15,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\AttachmentsTable|\Cake\ORM\Association\BelongsTo $Attachments
  * @property \App\Model\Table\ForeignsTable|\Cake\ORM\Association\BelongsTo $Foreigns
- *
  * @method \App\Model\Entity\AttachmentsLink get($primaryKey, $options = [])
  * @method \App\Model\Entity\AttachmentsLink newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\AttachmentsLink[] newEntities(array $data, array $options = [])
@@ -26,14 +26,13 @@ use Cake\Validation\Validator;
  */
 class AttachmentsLinksTable extends Table
 {
-
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -42,13 +41,13 @@ class AttachmentsLinksTable extends Table
         $this->setPrimaryKey('id');
 
         $this->belongsTo('Attachments', [
-            'foreignKey' => 'attachment_id'
+            'foreignKey' => 'attachment_id',
         ]);
         $this->belongsTo('Profiles', [
             'className' => 'Profiles',
             'conditions' => ['class' => 'Profile'],
             'foreignKey' => 'foreign_id',
-            'joinType' => 'INNER'
+            'joinType' => 'INNER',
         ]);
     }
 
@@ -58,17 +57,17 @@ class AttachmentsLinksTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->integer('id')
-            ->allowEmpty('id', 'create');
+            ->allowEmptyString('id', 'create');
 
         $validator
             ->scalar('class')
             ->maxLength('class', 7)
             ->requirePresence('class', 'create')
-            ->notEmpty('class');
+            ->notEmptyString('class');
 
         return $validator;
     }
@@ -80,7 +79,7 @@ class AttachmentsLinksTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->existsIn(['attachment_id'], 'Attachments'));
 
@@ -90,9 +89,9 @@ class AttachmentsLinksTable extends Table
     /**
      * Aftersave event handler
      *
-     * @param Event $event Event object
+     * @param \Cake\Event\Event $event Event object
      * @param \App\Model\Entity\AttachmentsLink $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function afterSave(Event $event, \App\Model\Entity\AttachmentsLink $entity, ArrayObject $options)
@@ -112,9 +111,9 @@ class AttachmentsLinksTable extends Table
     /**
      * Afterdelete event handler
      *
-     * @param Event $event Event object
+     * @param \Cake\Event\Event $event Event object
      * @param \App\Model\Entity\AttachmentsLink $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function afterDelete(Event $event, \App\Model\Entity\AttachmentsLink $entity, ArrayObject $options)
@@ -136,7 +135,9 @@ class AttachmentsLinksTable extends Table
     public function linkProfile($profileId, $attachmentId)
     {
         if (!$this->exists(['attachment_id' => $attachmentId, 'class' => 'Profile', 'foreign_id' => $profileId])) {
-            $attachemntsLink = $this->newEntity(['attachment_id' => $attachmentId, 'class' => 'Profile', 'foreign_id' => $profileId]);
+            $attachemntsLink = $this->newEntity(
+                ['attachment_id' => $attachmentId, 'class' => 'Profile', 'foreign_id' => $profileId]
+            );
 
             return (bool)$this->save($attachemntsLink);
         } else {

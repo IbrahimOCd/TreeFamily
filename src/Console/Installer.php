@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Console;
 
 if (!defined('STDIN')) {
@@ -16,11 +18,10 @@ use Exception;
  */
 class Installer
 {
-
     /**
      * An array of directories to be made writable
      */
-    const WRITABLE_DIRS = [
+    public const WRITABLE_DIRS = [
         'logs',
         'tmp',
         'tmp/cache',
@@ -30,7 +31,7 @@ class Installer
         'tmp/sessions',
         'tmp/tests',
         'uploads',
-        'webroot/img/thumbs'
+        'webroot/img/thumbs',
     ];
 
     /**

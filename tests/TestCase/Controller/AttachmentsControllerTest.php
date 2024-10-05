@@ -1,12 +1,15 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Controller;
 
-use App\Controller\AttachmentsController;
 use Cake\Core\Configure;
 use Cake\Filesystem\Folder;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
+use Laminas\Diactoros\UploadedFile;
+use const UPLOAD_ERR_OK;
 
 /**
  * App\Controller\AttachmentsController Test Case
@@ -25,7 +28,7 @@ class AttachmentsControllerTest extends TestCase
         'app.Attachments',
         'app.AttachmentsLinks',
         'app.Profiles',
-        'app.Logs'
+        'app.Logs',
     ];
 
     /**
@@ -35,7 +38,7 @@ class AttachmentsControllerTest extends TestCase
         'User' => [
             'id' => 1,
             'd_n' => 'Test User',
-        ]
+        ],
     ];
 
     /**
@@ -50,13 +53,9 @@ class AttachmentsControllerTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
-
-        $this->enableCsrfToken();
-        $this->enableSecurityToken();
-        $this->enableRetainFlashMessages();
 
         $this->resourceFolder = dirname(__FILE__) . DS . '..' . DS . '..' . DS . 'Resource';
 
@@ -80,7 +79,7 @@ class AttachmentsControllerTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
 
@@ -103,6 +102,7 @@ class AttachmentsControllerTest extends TestCase
     public function testIndex()
     {
         $this->session(['Auth' => $this->authData]);
+
         $this->get('/attachments');
 
         $this->assertResponseOk();
@@ -134,22 +134,28 @@ class AttachmentsControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('Attachments')->find()->count();
 
-        $this->post('attachments/add', [
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+        $this->enableRetainFlashMessages();
+
+        $attachment = new UploadedFile(
+            TMP . 'DDuckAngry.png',
+            115850,
+            UPLOAD_ERR_OK,
+            'DDuckAngry.png',
+            'image/png'
+        );
+
+        $this->post('/attachments/edit', [
             'user_id' => 1,
-            'filename' => [
-                'tmp_name' => TMP . 'DDuckAngry.png',
-                'name' => 'DDuckAngry.png',
-                'type' => 'image/png',
-                'size' => 115850,
-                'error' => 0
-            ],
+            'attachment' => $attachment,
             'title' => 'D. Duck the Madman',
-            'description' => null
+            'description' => null,
         ]);
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Attachments', 'action' => 'index']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('Attachments')->find()->count();
         $this->assertEquals($countBefore + 1, $countAfter);
@@ -181,7 +187,11 @@ class AttachmentsControllerTest extends TestCase
         // edit without file upload
         $countBefore = TableRegistry::get('Attachments')->find()->count();
 
-        $this->post('attachments/edit/d372525d-9fb6-4643-bd21-217cb96d7495', [
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+        $this->enableRetainFlashMessages();
+
+        $this->post('/attachments/edit/d372525d-9fb6-4643-bd21-217cb96d7495', [
             'id' => 'd372525d-9fb6-4643-bd21-217cb96d7495',
             'user_id' => 1,
             'filename' => [
@@ -189,7 +199,7 @@ class AttachmentsControllerTest extends TestCase
                 'error' => 4,
                 'name' => '',
                 'type' => '',
-                'size' => 0
+                'size' => 0,
             ],
             'title' => 'D. Duck Profile Edited',
             'description' => null,
@@ -197,7 +207,7 @@ class AttachmentsControllerTest extends TestCase
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Attachments', 'action' => 'index']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('Attachments')->find()->count();
         $this->assertEquals($countBefore, $countAfter);
@@ -215,23 +225,29 @@ class AttachmentsControllerTest extends TestCase
         // edit with file upload
         $countBefore = TableRegistry::get('Attachments')->find()->count();
 
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+        $this->enableRetainFlashMessages();
+
+        $attachment = new UploadedFile(
+            TMP . 'DDuckAngry.png',
+            115850,
+            UPLOAD_ERR_OK,
+            'DDuckAngry.png',
+            'image/png'
+        );
+
         $this->post('attachments/edit/d372525d-9fb6-4643-bd21-217cb96d7495', [
             'id' => 'd372525d-9fb6-4643-bd21-217cb96d7495',
             'user_id' => 1,
-            'filename' => [
-                'tmp_name' => TMP . 'DDuckAngry.png',
-                'name' => 'DDuckAngry.png',
-                'type' => 'image/png',
-                'size' => 115850,
-                'error' => 0
-            ],
+            'attachment' => $attachment,
             'title' => 'D. Duck Profile Edited',
             'description' => null,
         ]);
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Attachments', 'action' => 'index']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('Attachments')->find()->count();
         $this->assertEquals($countBefore, $countAfter);

@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
 use ArrayObject;
 use Cake\Event\Event;
-use Cake\ORM\Query;
-use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
@@ -23,14 +23,13 @@ use Cake\Validation\Validator;
  */
 class PostsLinksTable extends Table
 {
-
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -45,7 +44,7 @@ class PostsLinksTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->integer('id')
@@ -55,7 +54,7 @@ class PostsLinksTable extends Table
             ->scalar('class')
             ->maxLength('class', 20)
             ->requirePresence('class', 'create')
-            ->allowEmptyString('class', false);
+            ->allowEmptyString('class');
 
         return $validator;
     }
@@ -63,9 +62,9 @@ class PostsLinksTable extends Table
     /**
      * Aftersave event handler
      *
-     * @param Event $event Event object
+     * @param \Cake\Event\Event $event Event object
      * @param \App\Model\Entity\PostsLink $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function afterSave(Event $event, \App\Model\Entity\PostsLink $entity, ArrayObject $options)
@@ -85,9 +84,9 @@ class PostsLinksTable extends Table
     /**
      * Afterdelete event handler
      *
-     * @param Event $event Event object
+     * @param \Cake\Event\Event $event Event object
      * @param \App\Model\Entity\PostsLink $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \ArrayObject $options Options
      * @return void
      */
     public function afterDelete(Event $event, \App\Model\Entity\PostsLink $entity, ArrayObject $options)

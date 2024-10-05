@@ -23,6 +23,8 @@
             $.extend(options, o);
         }
 
+        console.log(options);
+
 		if(typeof options.notes != "undefined"){
 			notes = options.notes;
 		}

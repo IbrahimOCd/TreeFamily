@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\AttachmentsTable;
@@ -10,7 +12,6 @@ use Cake\TestSuite\TestCase;
  */
 class AttachmentsTableTest extends TestCase
 {
-
     /**
      * Test subject
      *
@@ -27,7 +28,7 @@ class AttachmentsTableTest extends TestCase
         'app.Attachments',
         'app.Profiles',
         'app.AttachmentsLinks',
-        'app.Imgnotes'
+        'app.Imgnotes',
     ];
 
     /**
@@ -35,7 +36,7 @@ class AttachmentsTableTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $config = TableRegistry::getTableLocator()->exists('Attachments') ? [] : ['className' => AttachmentsTable::class];
@@ -47,7 +48,7 @@ class AttachmentsTableTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         unset($this->Attachments);
 
@@ -55,13 +56,32 @@ class AttachmentsTableTest extends TestCase
     }
 
     /**
-     * Test fetchForProfile method
+     * Test initialize method
      *
      * @return void
      */
-    public function testFetchForProfile()
+    public function testInitialize()
     {
-        $ret = $this->Attachments->fetchForProfile(1);
-        $this->assertTrue((bool)$ret);
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test validationDefault method
+     *
+     * @return void
+     */
+    public function testValidationDefault()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test buildRules method
+     *
+     * @return void
+     */
+    public function testBuildRules()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
     }
 }

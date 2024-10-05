@@ -5,11 +5,9 @@ use Cake\TestSuite\Fixture\TestFixture;
 
 /**
  * ProfilesFixture
- *
  */
 class ProfilesFixture extends TestFixture
 {
-
     /**
      * Fields
      *
@@ -80,7 +78,7 @@ class ProfilesFixture extends TestFixture
      *
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         $this->records = [
             [
@@ -131,12 +129,13 @@ class ProfilesFixture extends TestFixture
                 'created' => '2018-12-14 13:55:53',
                 'creator_id' => 1,
                 'modified' => '2018-12-14 13:55:53',
-                'modifier_id' => 1
+                'modifier_id' => 1,
             ],
             [
                 'id' => 2,
                 'ta' => null,
                 'd_n' => 'Huey Duck',
+                'lvl' => 3,
                 'ln' => 'Duck',
                 'fn' => 'Huey',
                 'g' => 'm',

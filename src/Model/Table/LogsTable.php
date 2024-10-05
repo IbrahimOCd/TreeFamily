@@ -1,11 +1,8 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
-use ArrayObject;
-use Cake\Cache\Cache;
-use Cake\Datasource\EntityInterface;
-use Cake\Event\Event;
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -15,7 +12,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\ForeignsTable|\Cake\ORM\Association\BelongsTo $Foreigns
  * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\BelongsTo $Users
- *
  * @method \App\Model\Entity\Log get($primaryKey, $options = [])
  * @method \App\Model\Entity\Log newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Log[] newEntities(array $data, array $options = [])
@@ -24,19 +20,17 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\Log patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Log[] patchEntities($entities, array $data, array $options = [])
  * @method \App\Model\Entity\Log findOrCreate($search, callable $callback = null, $options = [])
- *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class LogsTable extends Table
 {
-
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -48,23 +42,23 @@ class LogsTable extends Table
 
         $this->belongsTo('Profiles', [
             'foreignKey' => 'foreign_id',
-            'conditions' => ['class' => 'Profile']
+            'conditions' => ['class' => 'Profile'],
         ]);
         $this->belongsTo('Posts', [
             'foreignKey' => 'foreign_id',
-            'conditions' => ['class' => 'Post']
+            'conditions' => ['class' => 'Post'],
         ]);
         $this->belongsTo('Attachments', [
             'foreignKey' => 'foreign_id',
-            'conditions' => ['class' => 'Attachment']
+            'conditions' => ['class' => 'Attachment'],
         ]);
         $this->belongsTo('Imgnotes', [
             'foreignKey' => 'foreign_id',
-            'conditions' => ['class' => 'Imgnote']
+            'conditions' => ['class' => 'Imgnote'],
         ]);
         $this->belongsTo('Users', [
             'className' => 'Profiles',
-            'foreignKey' => 'user_id'
+            'foreignKey' => 'user_id',
         ]);
     }
 
@@ -74,7 +68,7 @@ class LogsTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->integer('id')
@@ -109,21 +103,8 @@ class LogsTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): RulesChecker
     {
         return $rules;
-    }
-
-    /**
-     * Aftersave event handler
-     *
-     * @param Event $event Event object
-     * @param EntityInterface $entity Entity object
-     * @param ArrayObject $options Options
-     * @return void
-     */
-    public function afterSave(Event $event, EntityInterface $entity, ArrayObject $options)
-    {
-        Cache::delete('Logs');
     }
 }

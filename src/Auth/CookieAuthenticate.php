@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
+
 /**
- *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
@@ -16,9 +17,12 @@
 namespace App\Auth;
 
 use Cake\Auth\BaseAuthenticate;
+use Cake\Auth\DefaultPasswordHasher;
 use Cake\Controller\ComponentRegistry;
+use Cake\Http\Cookie\Cookie;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
+use Cake\I18n\FrozenTime;
 
 /**
  * An authentication adapter for AuthComponent. Provides the ability to authenticate using cookies
@@ -53,9 +57,6 @@ class CookieAuthenticate extends BaseAuthenticate
     {
         parent::__construct($registry, $config);
         $this->_controller = $registry->getController();
-        if (!isset($this->_controller->Cookie)) {
-            $this->_controller->loadComponent('Cookie');
-        }
     }
 
     /**
@@ -81,33 +82,34 @@ class CookieAuthenticate extends BaseAuthenticate
      * to find POST data that is used to find a matching record in the `config.userModel`. Will return false if
      * there is no post data, either username or password is missing, or if the scope conditions have not been met.
      *
-     * @param \Cake\Network\Request $request The request that contains login information.
-     * @param \Cake\Network\Response $response Unused response object.
+     * @param \Cake\Http\ServerRequest $request The request that contains login information.
+     * @param \Cake\Http\Response $response Unused response object.
      * @return mixed False on login failure.  An array of User data on success.
      */
     public function authenticate(ServerRequest $request, Response $response)
     {
         $fields = $this->_config['fields'];
 
-        if (!$cookie = $this->_controller->Cookie->read($this->_cookieKey)) {
+        $cookie = $this->_controller->getRequest()->getCookie($this->_cookieKey);
+        if (!$cookie) {
             return false;
         }
+
+        $cookie = json_decode($cookie, true);
+        $cookie['p'] = (new DefaultPasswordHasher())->hash($cookie['p']);
+
         if (!$this->_checkFields($cookie, $fields)) {
             return false;
         }
 
-        return $this->_findUser(
-            $cookie[$fields['username']],
-            $cookie[$fields['password']]
-        );
+        return $this->_findUser($cookie[$fields['username']]);
     }
 
     /**
      * Creates login cookie
      *
      * @param array $data Data containing username and password.
-
-     * @return mixed False on failure.  An array of cookie data on success.
+     * @return \Cake\Http\Response|bool
      */
     public function createCookie($data)
     {
@@ -117,25 +119,27 @@ class CookieAuthenticate extends BaseAuthenticate
             return false;
         }
 
-        $cookie = [
-            $fields['username'] => $data[$fields['username']],
-            $fields['password'] => $data[$fields['password']]
-        ];
-        $this->_controller->Cookie->configKey(
+        $cookie = new Cookie(
             $this->_cookieKey,
-            ['expires' => '+30 days']
+            [
+                $fields['username'] => $data[$fields['username']],
+                $fields['password'] => $data[$fields['password']],
+            ],
+            new FrozenTime('+30 days')
         );
 
-        return $this->_controller->Cookie->write($this->_cookieKey, $cookie);
+        $response = $this->_controller->getResponse()->withCookie($cookie);
+
+        return $response;
     }
 
     /**
      * Deletes login cookie
      *
-     * @return bool Result.
+     * @return \Cake\Http\Response
      */
     public function deleteCookie()
     {
-        return $this->_controller->Cookie->delete($this->_cookieKey);
+        return $this->_controller->getResponse()->withExpiredCookie(new Cookie($this->_cookieKey));
     }
 }

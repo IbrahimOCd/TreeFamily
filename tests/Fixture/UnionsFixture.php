@@ -5,11 +5,9 @@ use Cake\TestSuite\Fixture\TestFixture;
 
 /**
  * UnionsFixture
- *
  */
 class UnionsFixture extends TestFixture
 {
-
     /**
      * Fields
      *
@@ -40,7 +38,7 @@ class UnionsFixture extends TestFixture
      *
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         $this->records = [
             [
@@ -51,7 +49,7 @@ class UnionsFixture extends TestFixture
                 'dom_y' => null,
                 'loc' => 'Lorem ipsum dolor sit amet',
                 'created' => '2019-01-08 17:18:23',
-                'modified' => '2019-01-08 17:18:23'
+                'modified' => '2019-01-08 17:18:23',
             ],
         ];
         parent::init();

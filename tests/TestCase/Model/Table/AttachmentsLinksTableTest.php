@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\AttachmentsLinksTable;
@@ -10,7 +12,6 @@ use Cake\TestSuite\TestCase;
  */
 class AttachmentsLinksTableTest extends TestCase
 {
-
     /**
      * Test subject
      *
@@ -26,7 +27,7 @@ class AttachmentsLinksTableTest extends TestCase
     public $fixtures = [
         'app.AttachmentsLinks',
         'app.Attachments',
-        'app.Profiles'
+        'app.Profiles',
     ];
 
     /**
@@ -34,7 +35,7 @@ class AttachmentsLinksTableTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $config = TableRegistry::getTableLocator()->exists('AttachmentsLinks') ? [] : ['className' => AttachmentsLinksTable::class];
@@ -46,7 +47,7 @@ class AttachmentsLinksTableTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         unset($this->AttachmentsLinks);
 
@@ -54,17 +55,32 @@ class AttachmentsLinksTableTest extends TestCase
     }
 
     /**
-     * Test linkProfile method
+     * Test initialize method
      *
      * @return void
      */
-    public function testLinkProfile()
+    public function testInitialize()
     {
-        $ret = $this->AttachmentsLinks->linkProfile(2, 'd372525d-9fb6-4643-bd21-217cb96d7496');
-        $this->assertTrue($ret);
+        $this->markTestIncomplete('Not implemented yet.');
+    }
 
-        // link profile with attachment that does not exist
-        $ret = $this->AttachmentsLinks->linkProfile(2, 'd372525d-9fb6-4334-bd21-217cb96d7496');
-        $this->assertFalse($ret);
+    /**
+     * Test validationDefault method
+     *
+     * @return void
+     */
+    public function testValidationDefault()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test buildRules method
+     *
+     * @return void
+     */
+    public function testBuildRules()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
     }
 }

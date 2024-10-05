@@ -1,15 +1,15 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
 use App\Model\Table\Traits\FamilyTreeTrait;
 use ArrayObject;
-use Cake\Auth\DefaultPasswordHasher;
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Database\Expression\QueryExpression;
-use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
-use Cake\Mailer\Email;
+use Cake\Mailer\Mailer;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -25,7 +25,6 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\ImgnotesTable|\Cake\ORM\Association\HasMany $Imgnotes
  * @property \App\Model\Table\SettingsTable|\Cake\ORM\Association\HasMany $Settings
  * @property \App\Model\Table\UnitsTable|\Cake\ORM\Association\HasMany $Units
- *
  * @method \App\Model\Entity\Profile get($primaryKey, $options = [])
  * @method \App\Model\Entity\Profile newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Profile[] newEntities(array $data, array $options = [])
@@ -34,7 +33,6 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\Profile patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Profile[] patchEntities($entities, array $data, array $options = [])
  * @method \App\Model\Entity\Profile findOrCreate($search, callable $callback = null, $options = [])
- *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class ProfilesTable extends Table
@@ -47,7 +45,7 @@ class ProfilesTable extends Table
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -60,19 +58,19 @@ class ProfilesTable extends Table
 
         $this->belongsTo('Creators', [
             'className' => 'Profiles',
-            'foreignKey' => 'creator_id'
+            'foreignKey' => 'creator_id',
         ]);
         $this->belongsToMany('Attachments', [
             'joinTable' => 'attachments_links',
             'foreignKey' => 'foreign_id',
-            'dependent' => true
+            'dependent' => true,
         ]);
 
         $this->belongsToMany('Posts', [
             'joinTable' => 'posts_links',
             'foreignKey' => 'foreign_id',
             'conditions' => ['PostsLinks.class' => 'Profile'],
-            'dependent' => true
+            'dependent' => true,
         ]);
 
         $this->belongsToMany('Marriages', [
@@ -81,12 +79,12 @@ class ProfilesTable extends Table
             'foreignKey' => 'profile_id',
             'targetForeignKey' => 'union_id',
             'conditions' => ['Units.kind' => 'p'],
-            'dependent' => true
+            'dependent' => true,
         ]);
         $this->hasMany('Units', [
             'foreignKey' => 'profile_id',
             'cascadeCallbacks' => true,
-            'dependent' => true
+            'dependent' => true,
         ]);
     }
 
@@ -96,14 +94,12 @@ class ProfilesTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->integer('id')
-            ->allowEmpty('id', 'create')
-            ->notEmpty('fn')
-            ->allowEmpty('e')
-            ->email('e');
+            ->allowEmptyString('id', 'create')
+            ->notEmptyString('fn');
 
         return $validator;
     }
@@ -112,7 +108,6 @@ class ProfilesTable extends Table
      * validationResetPassword validation rules.
      *
      * @param \Cake\Validation\Validator $validator Validator instance.
-     *
      * @return \Cake\Validation\Validator
      */
     public function validationResetPassword($validator)
@@ -126,11 +121,11 @@ class ProfilesTable extends Table
                     return !empty($context['data']['p']);
                 }
             )
-            ->notEmpty('repeat_pass')
+            ->notEmptyString('repeat_pass')
             ->add('repeat_pass', 'match', [
                     'rule' => function ($value, $context) {
                         return $value == $context['data']['p'];
-                    }
+                    },
                 ]);
 
         return $validator;
@@ -140,17 +135,16 @@ class ProfilesTable extends Table
      * Install validation rules.
      *
      * @param \Cake\Validation\Validator $validator Validator instance.
-     *
      * @return \Cake\Validation\Validator
      */
-    public function validationInstall($validator)
+    public function validationInstall($validator): Validator
     {
         $validator = new Validator();
         $validator
-            ->notEmpty('fn')
-            ->notEmpty('ln')
-            ->notEmpty('u')
-            ->notEmpty('e')
+            ->notEmptyString('fn')
+            ->notEmptyString('ln')
+            ->notEmptyString('u')
+            ->notEmptyString('e')
             ->email('e')
             ->add('p', 'minLength', ['rule' => ['minLength', 4]])
             ->requirePresence(
@@ -159,46 +153,12 @@ class ProfilesTable extends Table
                     return !empty($context['data']['p']);
                 }
             )
-            ->notEmpty('repeat_pass')
+            ->notEmptyString('repeat_pass')
             ->add('repeat_pass', 'match', [
-                'rule' => function ($value, $context) {
-                    return $value == $context['data']['p'];
-                }
-            ]);
-
-        return $validator;
-    }
-
-    /**
-     * Settings validation rules.
-     *
-     * @param \Cake\Validation\Validator $validator Validator instance.
-     *
-     * @return \Cake\Validation\Validator
-     */
-    public function validationSettings($validator)
-    {
-        $validator = new Validator();
-        $validator
-            ->allowEmpty('e')
-            ->email('e')
-            ->allowEmpty('p')
-            ->add('p', 'minLength', ['rule' => ['minLength', 4]])
-            ->allowEmpty('repeat_pass')
-            ->add('repeat_pass', 'match', [
-                'rule' => function ($value, $context) {
-                    return $value == $context['data']['p'];
-                }
-            ])
-            ->allowEmpty('old_pass')
-            ->add('old_pass', 'match', [
-                'rule' => function ($value, $context) {
-                    /** @var \App\Model\Entity\Profile $user */
-                    $user = TableRegistry::get('Profiles')->get($context['data']['id']);
-
-                    return (new DefaultPasswordHasher())->check($value, $user->p);
-                }
-            ]);
+                    'rule' => function ($value, $context) {
+                        return $value == $context['data']['p'];
+                    },
+                ]);
 
         return $validator;
     }
@@ -210,11 +170,10 @@ class ProfilesTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): RulesChecker
     {
         //$rules->add($rules->existsIn(['creator_id'], 'Creators'));
         //$rules->add($rules->existsIn(['modifier_id'], 'Modifiers'));
-        $rules->add($rules->isUnique(['u']));
 
         return $rules;
     }
@@ -222,9 +181,9 @@ class ProfilesTable extends Table
     /**
      * beforeSave event handler
      *
-     * @param Event $event Event object
+     * @param \Cake\Event\Event $event Event object
      * @param \App\Model\Entity\Profile $entity Entity object
-     * @param ArrayObject $options Options
+     * @param \ArrayObject $options Options
      * @return bool
      */
     public function beforeSave(Event $event, \App\Model\Entity\Profile $entity, ArrayObject $options)
@@ -327,7 +286,9 @@ class ProfilesTable extends Table
                 $siblings = TableRegistry::get('Profiles')->find()
                     ->select()
                     ->matching('Units', function ($q) use ($id, $family) {
-                        return $q->where(['Units.union_id' => $family->union_id, 'Units.kind' => 'c', 'Units.profile_id !=' => $id]);
+                        return $q->where(
+                            ['Units.union_id' => $family->union_id, 'Units.kind' => 'c', 'Units.profile_id !=' => $id]
+                        );
                     })
                     ->order(['Units.sort_order', 'Profiles.dob_y'])
                     ->toArray();
@@ -348,7 +309,11 @@ class ProfilesTable extends Table
 
         if (
             empty($type) || $type == 'marriages' || $type == 'spouses' || $type == 'children' ||
-            (is_array($type) && (in_array('marriages', $type) || in_array('spouses', $type) || in_array('children', $type)))
+            (is_array($type) && (
+                in_array('marriages', $type) ||
+                in_array('spouses', $type) ||
+                in_array('children', $type)
+            ))
         ) {
             $marr = TableRegistry::get('Units')->find()
                 ->select(['union_id'])
@@ -367,7 +332,9 @@ class ProfilesTable extends Table
 
                 $marriages[$marriage_key]['spouse'] = TableRegistry::get('Profiles')->find()
                     ->matching('Units', function ($q) use ($id, $marriage) {
-                        return $q->where(['Units.union_id' => $marriage->union_id, 'Units.kind' => 'p', 'Units.profile_id !=' => $id]);
+                        return $q->where(
+                            ['Units.union_id' => $marriage->union_id, 'Units.kind' => 'p', 'Units.profile_id !=' => $id]
+                        );
                     })
                     ->first();
                 if ($assoc) {
@@ -378,7 +345,11 @@ class ProfilesTable extends Table
 
                 if (
                     empty($type) || $type == 'marriages' || $type == 'children' ||
-                    (is_array($type) && (in_array('marriages', $type) || (in_array('marriages', $type) || in_array('children', $type))))
+                    (is_array($type) && (
+                        in_array('marriages', $type) ||
+                        (in_array('marriages', $type) ||
+                        in_array('children', $type))
+                    ))
                 ) {
                     $marriages[$marriage_key]['children'] = TableRegistry::get('Profiles')->find()
                         ->matching('Units', function ($q) use ($marriage) {
@@ -424,9 +395,9 @@ class ProfilesTable extends Table
     /**
      * Costum finder method "search"
      *
-     * @param Query $query Query object.
+     * @param \Cake\ORM\Query $query Query object.
      * @param array $options Options.
-     * @return Query
+     * @return \Cake\ORM\Query
      */
     public function findSearch(Query $query, array $options)
     {
@@ -436,7 +407,7 @@ class ProfilesTable extends Table
                     'd_n LIKE' => '%' . $options['criterio'] . '%',
                     'mdn LIKE' => '%' . $options['criterio'] . '%',
                     'loc LIKE' => '%' . $options['criterio'] . '%',
-                ]
+                ],
             ]);
         }
 
@@ -477,7 +448,6 @@ class ProfilesTable extends Table
      * Sends reset email
      *
      * @param \App\Model\Entity\Profile $user User entity.
-     *
      * @return bool
      */
     public function sendResetEmail($user)
@@ -485,17 +455,18 @@ class ProfilesTable extends Table
         $reset_key = uniqid();
         $user->rst = $reset_key;
         if ($this->save($user)) {
-            $email = new Email('default');
-            $email->setFrom([Configure::read('from.email') => Configure::read('from.name')]);
-            $email->setTo($user->e);
-            $email->setSubject(__('Password Reset'));
+            $mailer = new Mailer('default');
+            $mailer->setFrom([Configure::read('from.email') => Configure::read('from.name')])
+                ->setTo($user->e)
+                ->setSubject(__('Password Reset'))
+                ->setViewVars(['reset_key' => $reset_key])
 
-            $email->viewBuilder()->setTemplate('reset');
-            $email->setEmailFormat('text');
-            $email->setViewVars(['reset_key' => $reset_key]);
-            $email->setHelpers(['Html']);
+                ->setEmailFormat('text')
+                ->viewBuilder()
+                    ->setTemplate('reset')
+                    ->addHelpers(['Html']);
 
-            $ret = $email->send();
+            $ret = $mailer->deliver();
 
             return (bool)$ret;
         }
@@ -513,8 +484,14 @@ class ProfilesTable extends Table
         //Cache::delete('Profiles.birthdays');
         $ret = Cache::remember('Profiles.birthdays', function () {
             $q = $this->find();
-            $fieldExpr = $q->newExpr()->add('DATE_ADD(DATE_ADD(MAKEDATE(dob_y, 1), INTERVAL (dob_m)-1 MONTH), INTERVAL (dob_d)-1 DAY)');
-            $diffExpr = $q->newExpr()->add('DATEDIFF(DATE_ADD( DATE_ADD( MAKEDATE(YEAR(CURDATE()), 1), INTERVAL (dob_m)-1 MONTH ), INTERVAL (dob_d)-1 DAY ), CURDATE() )');
+            $fieldExpr = $q->newExpr()->add(
+                'DATE_ADD(DATE_ADD(MAKEDATE(dob_y, 1), INTERVAL (dob_m)-1 MONTH), INTERVAL (dob_d)-1 DAY)'
+            );
+            $diffExpr = $q->newExpr()->add(
+                'DATEDIFF(DATE_ADD( DATE_ADD( MAKEDATE(YEAR(CURDATE()), 1), ' .
+                'INTERVAL (dob_m)-1 MONTH), INTERVAL (dob_d)-1 DAY), CURDATE() )'
+            );
+
             $dates = $q
                 ->select($this)
                 ->select(['dob' => $fieldExpr])
@@ -524,7 +501,7 @@ class ProfilesTable extends Table
                     return $whereExpr->isNotNull($fieldExpr);
                 })
                 ->andWhere(function (QueryExpression $andWhereExpr) use ($diffExpr) {
-                    return $andWhereExpr->gte($diffExpr, 0, 'integer');
+                    return $andWhereExpr->gt($diffExpr, 0, 'integer');
                 })
                 ->order(['diff'])
                 ->limit(20)

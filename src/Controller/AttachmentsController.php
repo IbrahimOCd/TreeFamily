@@ -1,16 +1,15 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controller;
 
-use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\Date;
-use Cake\ORM\TableRegistry;
+use Cake\I18n\FrozenDate;
 use Cake\Utility\Text;
 
 /**
  * Attachments Controller
- *
  *
  * @property \App\Model\Table\AttachmentsTable $Attachments
  * @method \App\Model\Entity\Attachment[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
@@ -20,8 +19,8 @@ class AttachmentsController extends AppController
     public $paginate = [
         'limit' => 25,
         'order' => [
-            'Attachments.created' => 'asc'
-        ]
+            'Attachments.created' => 'asc',
+        ],
     ];
 
     /**
@@ -32,10 +31,6 @@ class AttachmentsController extends AppController
      */
     public function isAuthorized($user)
     {
-        if (in_array($this->getRequest()->getParam('action'), ['edit', 'delete', 'add', 'crop'])) {
-            return $this->currentUser->get('lvl') <= constant('LVL_EDITOR');
-        }
-
         return true;
     }
 
@@ -48,7 +43,7 @@ class AttachmentsController extends AppController
     {
         $q = $this->Attachments->find();
         if ($this->getRequest()->getQuery('filter') != 'all') {
-            $q->where(['created >=' => (new Date())->subMonths(3)]);
+            $q->where(['created >=' => (new FrozenDate())->subMonths(3)]);
         }
 
         $attachments = $this->paginate($q);
@@ -107,55 +102,19 @@ class AttachmentsController extends AppController
      */
     public function view($id = null)
     {
-        $attachment = $this->Attachments->get($id, ['contain' => ['Creators', 'Imgnotes', 'AttachmentsLinks.Profiles']]);
+        $attachment = $this->Attachments->get(
+            $id,
+            ['contain' => ['Creators', 'Imgnotes', 'AttachmentsLinks.Profiles']]
+        );
 
         $this->set('attachment', $attachment);
-    }
-
-    /**
-     * Crop method
-     *
-     * @param string|null $id Attachment id.
-     * @return \Cake\Http\Response|void
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function crop($id = null)
-    {
-        $this->getRequest()->allowMethod(['post']);
-        $attachment = $this->Attachments->get($this->getRequest()->getData('attachment_id'));
-
-        if (
-            $this->Attachments->crop(
-                $attachment,
-                (int)$this->getRequest()->getData('x'),
-                (int)$this->getRequest()->getData('y'),
-                (int)$this->getRequest()->getData('width'),
-                (int)$this->getRequest()->getData('height')
-            )
-        ) {
-            $this->Flash->success(__('The attachment has been cropped.'));
-        } else {
-            $this->Flash->error(__('The attachment could not be cropped. Please, try again.'));
-        }
-
-        return $this->redirect(base64_decode($this->getRequest()->getData('referer')));
-    }
-
-    /**
-     * Add method
-     *
-     * @return void Redirects on successful add, renders view otherwise.
-     */
-    public function add()
-    {
-        $this->setAction('edit');
     }
 
     /**
      * Edit method
      *
      * @param string|null $id Attachment id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @return \Cake\Http\Response|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function edit($id = null)
@@ -163,16 +122,23 @@ class AttachmentsController extends AppController
         if ($id) {
             $attachment = $this->Attachments->get($id, ['contain' => ['AttachmentsLinks']]);
         } else {
-            $attachment = $this->Attachments->newEntity(['contain' => ['AttachmentsLinks']]);
+            $attachment = $this->Attachments->newEmptyEntity();
         }
         if ($this->getRequest()->is(['patch', 'post', 'put'])) {
-            $attachment = $this->Attachments->patchEntity($attachment, $this->getRequest()->getData(), ['AttachmentsLinks']);
+            $attachment = $this->Attachments->patchEntity(
+                $attachment,
+                $this->getRequest()->getData(),
+                ['AttachmentsLinks']
+            );
 
             if ($this->Attachments->save($attachment)) {
-                $this->Attachments->processUpload($attachment, $this->getRequest()->getData('filename.tmp_name'), Configure::read('uploadCheck'));
+                if ($this->getRequest()->getData('attachment') instanceof \Laminas\Diactoros\UploadedFile) {
+                    $this->Attachments->processUpload($attachment, $this->getRequest()->getData('attachment'));
+                }
                 $this->Flash->success(__('The attachment has been saved.'));
 
-                if ($referer = base64_decode($this->getRequest()->getData('referer', ''))) {
+                $referer = base64_decode($this->getRequest()->getData('referer', ''));
+                if ($referer) {
                     return $this->redirect($referer);
                 } else {
                     return $this->redirect(['action' => 'index']);
@@ -200,6 +166,6 @@ class AttachmentsController extends AppController
             $this->Flash->error(__('The attachment could not be deleted. Please, try again.'));
         }
 
-        return $this->redirect($this->getRequest()->referer());
+        return $this->redirect($this->getRequest()->getQuery('redirect', $this->getRequest()->referer()));
     }
 }

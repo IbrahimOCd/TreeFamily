@@ -1,53 +1,41 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Users Controller
  */
 namespace App\Controller;
 
-use Cake\Auth\DefaultPasswordHasher;
 use Cake\Core\Configure;
-use Cake\Event\Event;
-use Cake\Event\EventManager;
+use Cake\Event\EventInterface;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Inflector;
-use Cake\Utility\Security;
-use Cake\Validation\Validator;
 
 /**
  * Users Controller
  *
  * This controller manages users.
- *
  */
 class UsersController extends AppController
 {
-    /**
-     * Cookie key name
-     *
-     * @var string
-     */
-    private $_cookieKey = 'famiree_login';
-
     /**
      * Initialize method.
      *
      * @return void
      */
-    public function initialize()
+    public function initialize(): void
     {
         parent::initialize();
-        $this->loadComponent('Cookie');
+        //$this->loadComponent('Cookie');
     }
 
     /**
      * BeforeFilter method.
      *
-     * @param \Cake\Event\Event $event Cake Event object.
+     * @param \Cake\Event\EventInterface $event Cake Event object.
      * @return \Cake\Http\Response|null
      */
-    public function beforeFilter(Event $event)
+    public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
         $this->Auth->allow(['logout', 'reset', 'changePassword', 'install']);
@@ -66,7 +54,7 @@ class UsersController extends AppController
      */
     public function isAuthorized($user)
     {
-        if (in_array($this->getRequest()->getParam('action'), ['settings'])) {
+        if (in_array($this->getRequest()->getParam('action'), ['properties'])) {
             return $this->Auth->user('id');
         }
 
@@ -77,6 +65,7 @@ class UsersController extends AppController
      * Login method.
      *
      * This method will display login form
+     *
      * @return mixed
      */
     public function login()
@@ -85,24 +74,23 @@ class UsersController extends AppController
             $this->redirect($this->Auth->redirectUrl());
         }
 
-        if ($user = $this->Auth->identify()) {
+        $user = $this->Auth->identify();
+        if ($user) {
             $this->Auth->setUser($user);
-            /** @var \App\Model\Entity\Profile $user */
-            $user = TableRegistry::get('Profiles')->get($this->Auth->user('id'));
-            $user->last_login = new FrozenTime();
 
             if ($this->Auth->authenticationProvider()->needsPasswordRehash()) {
+                /** @var \App\Model\Entity\Profile $user */
+                $user = TableRegistry::get('Profiles')->get($this->Auth->user('id'));
                 $user->p = $this->request->getData('p');
+                TableRegistry::get('Profiles')->save($user);
             }
-
-            TableRegistry::get('Profiles')->save($user);
 
             // set cookie
             if (!empty($this->getRequest()->getData('remember_me'))) {
                 /** @var \App\Auth\CookieAuthenticate $CookieAuth */
                 $CookieAuth = $this->Auth->getAuthenticate('Cookie');
                 if (!empty($CookieAuth)) {
-                    $CookieAuth->createCookie($this->getRequest()->getData());
+                    $this->response = $CookieAuth->createCookie($this->getRequest()->getData());
                 }
             }
         } else {
@@ -114,7 +102,7 @@ class UsersController extends AppController
         if ($this->Auth->user('id')) {
             $redirect = $this->Auth->redirectUrl();
 
-            return $this->redirect($redirect);
+            return $this->response->withLocation($redirect);
         }
     }
 
@@ -128,10 +116,10 @@ class UsersController extends AppController
         /** @var \App\Auth\CookieAuthenticate $CookieAuth */
         $CookieAuth = $this->Auth->getAuthenticate('Cookie');
         if (!empty($CookieAuth)) {
-            $CookieAuth->deleteCookie();
+            $this->response = $CookieAuth->deleteCookie();
         }
 
-        return $this->redirect($this->Auth->logout());
+        return $this->response->withLocation($this->Auth->logout());
     }
 
     /**
@@ -150,15 +138,14 @@ class UsersController extends AppController
         if ($this->getRequest()->is('post')) {
             /** @var \App\Model\Table\ProfilesTable $ProfilesTable */
             $ProfilesTable = TableRegistry::get('Profiles');
+            /** @var \App\Model\Entity\Profile $user */
             $user = $ProfilesTable->find()
                 ->select()
                 ->where(['e' => $this->getRequest()->getData('email')])
                 ->first();
 
             if ($user) {
-                /** @var \App\Model\Entity\Profile $user2 */
-                $user2 = $user;
-                $ProfilesTable->sendResetEmail($user2);
+                $ProfilesTable->sendResetEmail($user);
                 $this->Flash->success(__('An email with password reset instructions has been sent.'));
             } else {
                 $this->Flash->error(__('No user with specified email has been found.'));
@@ -217,7 +204,7 @@ class UsersController extends AppController
             $this->redirect('/');
         }
 
-        $user = $ProfilesTable->newEntity();
+        $user = $ProfilesTable->newEmptyEntity();
         if ($this->getRequest()->is(['patch', 'post', 'put'])) {
             $ProfilesTable->patchEntity($user, $this->getRequest()->getData(), ['validate' => 'install']);
 
@@ -229,35 +216,6 @@ class UsersController extends AppController
             }
         } else {
             $user->set('p', null);
-        }
-
-        $this->set(compact('user'));
-    }
-
-    /**
-     * Change users settings
-     *
-     * @return void
-     */
-    public function settings()
-    {
-        /** @var \App\Model\Table\ProfilesTable $ProfilesTable */
-        $ProfilesTable = TableRegistry::get('Profiles');
-        $user = $ProfilesTable->get($this->currentUser->get('id'));
-
-        if ($this->getRequest()->is(['patch', 'post', 'put'])) {
-            $ProfilesTable->patchEntity($user, $this->getRequest()->getData(), ['validate' => 'settings']);
-            if (empty($this->getRequest()->getData('p'))) {
-                $user->setDirty('p', false);
-                unset($user->p);
-            }
-
-            if (!$user->getErrors() && $ProfilesTable->save($user)) {
-                $this->Flash->success(__('User settings have been changed.'));
-                $this->redirect('/');
-            } else {
-                $this->Flash->error(__('Please verify that the information is correct.'));
-            }
         }
 
         $this->set(compact('user'));

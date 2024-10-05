@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Test\TestCase\Controller;
 
-use App\Controller\PostsController;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\IntegrationTestTrait;
@@ -23,7 +24,7 @@ class PostsControllerTest extends TestCase
         'app.Posts',
         'app.Profiles',
         'app.PostsLinks',
-        'app.Logs'
+        'app.Logs',
     ];
 
     /**
@@ -33,7 +34,7 @@ class PostsControllerTest extends TestCase
         'User' => [
             'id' => 1,
             'd_n' => 'Test User',
-        ]
+        ],
     ];
 
     /**
@@ -41,7 +42,7 @@ class PostsControllerTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -93,14 +94,14 @@ class PostsControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('Posts')->find()->count();
 
-        $this->post('posts/add', [
+        $this->post('/posts/edit', [
             'title' => 'Test Memory',
             'body' => 'This is a memory from a test suite.',
         ]);
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Posts', 'action' => 'index']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('Posts')->find()->count();
         $this->assertEquals($countBefore + 1, $countAfter);
@@ -117,7 +118,7 @@ class PostsControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('Posts')->find()->count();
 
-        $this->post('posts/edit/1', [
+        $this->post('/posts/edit/1', [
             'id' => 1,
             'title' => 'Test Memory',
             'body' => 'This is an edited memory from a test suite.',
@@ -125,7 +126,7 @@ class PostsControllerTest extends TestCase
 
         $this->assertResponseSuccess();
         $this->assertRedirect(['controller' => 'Posts', 'action' => 'index']);
-        $this->assertFlashElement('Flash/success');
+        $this->assertFlashElement('flash/success');
 
         $countAfter = TableRegistry::get('Posts')->find()->count();
         $this->assertEquals($countBefore, $countAfter);
@@ -145,7 +146,7 @@ class PostsControllerTest extends TestCase
 
         $countBefore = TableRegistry::get('Posts')->find()->count();
 
-        $this->get('posts/delete/1');
+        $this->get('/posts/delete/1');
 
         $this->assertRedirect();
 
