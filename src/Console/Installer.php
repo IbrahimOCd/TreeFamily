@@ -324,14 +324,14 @@ class Installer
 
         while (!$dbConnectSuccess && $numRetries < 10) {
             $dbHost = $io->ask('<info>Enter database host ?</info> [<comment>localhost</comment>]? ', 'localhost');
-            $dbName = $io->ask('<info>Enter database name ?</info> [<comment>arhint</comment>]? ', 'arhint');
+            $dbName = $io->ask('<info>Enter database name ?</info> [<comment>famiree_new</comment>]? ', 'famiree_new');
             $dbUser = $io->ask('<info>Enter db user ?</info> ');
             $dbPassword = $io->ask('<info>Enter db password ?</info> ');
 
             $dbConnectSuccess = static::checkDbConnection($dbHost, $dbName, (string)$dbUser, (string)$dbPassword, $io);
 
             if ($dbConnectSuccess) {
-                static::setDbConfigInFile($dbHost, $dbName, $dbUser, $dbPassword, $dir, 'app_local.php', $io);
+                static::setDbConfigInFile($dbHost, $dbName, (string)$dbUser, (string)$dbPassword, $dir, 'app_local.php', $io);
             } else {
                 $io->writeError('Cannot connect to mysql database. Please try again.');
             }
@@ -377,7 +377,7 @@ class Installer
         $conn = ConnectionManager::get($connection);
 
         if ($conn && $conn->getDriver()->connect()) {
-            $io->write('CREATE ADMIN USER');
+            /*$io->write('CREATE ADMIN USER');
 
             $adminName = $io->ask(
                 '<info>Enter admin\'s display name ?</info> [<comment>Administrator</comment>]? ',
@@ -435,7 +435,7 @@ class Installer
                     'mat_no' => 'string',
                     'tax_no' => 'string',
                 ]
-            );
+            );*/
         } else {
             $io->writeError('Cannot connect to mysql database to create admin user');
         }
