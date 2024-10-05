@@ -7,12 +7,10 @@ if (!defined('STDIN')) {
     define('STDIN', (int)fopen('php://stdin', 'r'));
 }
 
-use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Datasource\ConnectionManager;
 use Cake\Utility\Security;
-use Cake\Utility\Text;
 use Composer\IO\IOInterface;
 use Composer\Script\Event;
 use Exception;
@@ -40,6 +38,7 @@ class Installer
         'tmp/tests',
         'uploads',
         'webroot/img/thumbs',
+        'config/Seeds',
     ];
 
     /**
@@ -331,7 +330,15 @@ class Installer
             $dbConnectSuccess = static::checkDbConnection($dbHost, $dbName, (string)$dbUser, (string)$dbPassword, $io);
 
             if ($dbConnectSuccess) {
-                static::setDbConfigInFile($dbHost, $dbName, (string)$dbUser, (string)$dbPassword, $dir, 'app_local.php', $io);
+                static::setDbConfigInFile(
+                    $dbHost,
+                    $dbName,
+                    (string)$dbUser,
+                    (string)$dbPassword,
+                    $dir,
+                    'app_local.php',
+                    $io
+                );
             } else {
                 $io->writeError('Cannot connect to mysql database. Please try again.');
             }
