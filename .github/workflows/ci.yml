@@ -109,11 +109,7 @@ jobs:
 
     - name: Composer Install
       run: |
-        if ${{ matrix.php-version == '8.1' }}; then
-          composer update --ignore-platform-reqs
-        else
-          composer update
-        fi
+        composer update
 
     - name: Run PHP CodeSniffer
       run: vendor/bin/phpcs --report=checkstyle | cs2pr
