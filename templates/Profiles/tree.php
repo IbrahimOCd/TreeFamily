@@ -12,11 +12,8 @@
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
 
-	<?php echo $this->Html->css('header') . PHP_EOL; ?>
-	<?php echo $this->Html->css('tree') . PHP_EOL; ?>
-
-	<?php echo $this->Html->script('jquery.min') . PHP_EOL; ?>
-	<?php echo $this->Html->script('jquery-ui-personalized.min') . PHP_EOL; ?>
+	<?= $this->AssetCompress->css('famireetree.css'); ?>
+	<?= $this->AssetCompress->script('famiree.js'); ?>
 </head>
 <body>
 <?php
@@ -359,7 +356,6 @@
 				?>
 			</div>
 		</div>
-        <?php echo $this->Html->script('tree') . PHP_EOL; ?>
 		<script type="text/javascript">
 			$(document).ready(function() {
 				var sel ;

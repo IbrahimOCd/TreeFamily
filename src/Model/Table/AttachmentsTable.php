@@ -227,7 +227,8 @@ class AttachmentsTable extends Table
                 unlink($dir->path . DS . 'original');
             }
 
-            $uploadedFile->moveTo($dir->path . DS . 'original');
+            //$uploadedFile->moveTo($dir->path . DS . 'original');
+            rename($uploadedFile->getStream()->getMetadata('uri'), $dir->path . DS . 'original');
             if (is_file($dir->path . DS . 'original')) {
                 $image->resize(640, 480, 'inside')->saveToFile($dir->path . DS . 'large', $entity->ext);
                 $image->resize(200, 200, 'inside')->saveToFile($dir->path . DS . 'medium', $entity->ext);
@@ -291,8 +292,8 @@ class AttachmentsTable extends Table
                 ], ['associated' => ['AttachmentsLinks']]);
 
                 $jpgAttachment = new UploadedFile(
-                    $tmpfname,
-                    filesize($tmpfname),
+                    $croppedAttachment->filename,
+                    $croppedAttachment->filesize,
                     UPLOAD_ERR_OK,
                     $croppedAttachment->original,
                     $croppedAttachment->mimetype

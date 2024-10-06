@@ -241,7 +241,6 @@ if ($this->currentUser->exists() && $this->currentUser->get('lvl') <= LVL_EDITOR
     ?>
         <div class="dropdown form" id="FormProfileAttachment">
         <?php
-            echo $this->Html->script('jquery.textarearesizer.min');
             echo $this->Form->create(null, ['type' => 'file',
                 'id' => 'ProfileViewAttachmentForm',
                 'url' => [
@@ -560,14 +559,6 @@ if ($this->currentUser->exists() && $this->currentUser->get('lvl') <= LVL_EDITOR
             }
             ?>
         </div>
-        <?php
-            echo $this->Html->script('jquery.textarearesizer.min') . PHP_EOL;
-            //echo $this->Html->script('ui.core') . PHP_EOL;
-            //echo $this->Html->script('ui.draggable') . PHP_EOL;
-            //echo $this->Html->script('ui.droppable') . PHP_EOL;
-            echo $this->Html->script('jquery-ui-personalized.min');
-            echo $this->Html->css('ui.all');
-        ?>
 
         <script type="text/javascript">
             $(document).ready(function() {

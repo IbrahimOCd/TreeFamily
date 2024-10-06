@@ -69,8 +69,6 @@
 
         echo '</div>';
         echo $this->Form->end();
-
-        echo $this->Html->script('jquery.textarearesizer.min');
         ?>
 </div>
 

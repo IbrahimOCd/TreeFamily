@@ -2,9 +2,6 @@
     $this->set('sidebar', 'Profiles/reorder_children');
 ?>
 <h1><?= __('Reorder Children') ?></h1>
-<?php
-    echo $this->Html->script('jquery-ui-personalized.min');
-?>
 <style type="text/css">
     .sortable { margin: 0; padding: 0; width: 60%; margin-bottom: 0; }
     .sortable li { cursor: ns-resize; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }

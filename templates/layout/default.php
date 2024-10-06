@@ -20,10 +20,8 @@
 	<meta name="msapplication-TileColor" content="#da532c">
 	<meta name="theme-color" content="#ffffff">
 
-	<?php echo $this->Html->css('header').PHP_EOL; ?>
-	<?php echo $this->Html->css('main').PHP_EOL; ?>
-
-	<?php echo $this->Html->script('jquery.min').PHP_EOL; ?>
+	<?= $this->AssetCompress->css('famiree.css'); ?>
+	<?= $this->AssetCompress->script('famiree.js'); ?>
 	<?= $this->fetch('script') ?>
 </head>
 <body>

@@ -120,15 +120,6 @@ if (!empty($attachment->description)) {
     echo ' ' . __('or') . ' <span class="link" id="CancelNoteLink">' . __('Cancel') . '</span>';
     echo '</div>';
     echo $this->Form->end();
-
-    echo $this->Html->script('jquery.imgareaselect.js');
-    echo $this->Html->script('jquery.imgnotes-0.2');
-
-    //echo $this->Html->script('ui.core');
-    //echo $this->Html->script('ui.autocomplete');
-    echo $this->Html->script('jquery-ui-personalized.min');
-    echo $this->Html->css('imgnotes');
-    echo $this->Html->css('ui.all');
     ?>
 </div>
 <script type="text/javascript">
@@ -151,21 +142,15 @@ if (!empty($attachment->description)) {
             source: '<?= $this->Url->build(['controller' => 'Profiles', 'action' => 'autocomplete']) ?>',
             dataType: "text",
             width: "240px",
-            formatResult: function(row) {
-                $('#ImageAvatarCheck').hide();
-                return row[1];
-            },
-            formatItem: function(data, i, total) {
-                return data[1];
-            },
             search: function() {
                 $('#ImgnoteProfileId').val('');
                 $('#ImageAvatarCheck').hide();
             },
-            result: function(data, row) {
-                console.log(data);
-                $('#ImgnoteProfileId').val(row[0]);
+            select: function(event, ui) {
+                $('#ImgnoteProfileId').val(ui.item.value);
+                $('#ImgnoteNote').val(ui.item.label);
                 $('#ImageAvatarCheck').show();
+                return false;
             }
         });
 
@@ -222,21 +207,16 @@ if (!empty($attachment->description)) {
             return false;
         });
         $('#AttachmentsLinksProfile').autocomplete({
-            url: '<?= $this->Url->build(['controller' => 'Profiles', 'action' => 'autocomplete']) ?>',
+            source: '<?= $this->Url->build(['controller' => 'Profiles', 'action' => 'autocomplete']) ?>',
             dataType: "text",
             width: "240px",
-            formatResult: function(row) {
-                return row[1];
-            },
-            formatItem: function(data, i, total) {
-                return data[1];
-            },
             search: function() {
                 $('#AttachmentsLinksForeignId').val('');
             },
-            result: function(data, row) {
-                console.log(data);
-                $('#AttachmentsLinksForeignId').val(row[0]);
+            select: function(event, ui) {
+                $('#AttachmentsLinksForeignId').val(ui.item.value);
+                $('#AttachmentsLinksProfile').val(ui.item.label);
+                return false;
             }
         });
     });

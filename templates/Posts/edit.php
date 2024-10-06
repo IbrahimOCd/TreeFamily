@@ -21,7 +21,6 @@
 
     echo $this->Form->control('title', ['label' => __('Title') . ':', 'class' => 'big', 'id' => 'PostTitle']);
     echo $this->Form->control('body', ['label' => __('Body') . ':', 'rows' => 4, 'id' => 'PostBody']);
-    echo $this->Html->script('jquery.textarearesizer.min');
     ?>
     </div>
 </div>
@@ -50,11 +49,6 @@
     echo '</div>';
 
     echo $this->Form->end();
-    echo $this->Html->script('ui.core');
-    echo $this->Html->script('ui.autocomplete');
-    echo $this->Html->css('ui.core');
-    echo $this->Html->css('ui.theme');
-    echo $this->Html->css('ui.autocomplete');
 ?>
 </div>
 

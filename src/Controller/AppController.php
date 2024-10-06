@@ -104,7 +104,8 @@ class AppController extends Controller
     public function beforeRender(EventInterface $event)
     {
         $builder = $this->viewBuilder()
-            ->addHelper('Famiree');
+            ->addHelper('Famiree')
+            ->addHelper('AssetCompress.AssetCompress');
 
         return null;
     }
