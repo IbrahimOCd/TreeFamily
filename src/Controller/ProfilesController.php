@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Core\Configure;
 use Cake\Event\EventInterface;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
@@ -330,9 +331,9 @@ class ProfilesController extends AppController
      */
     public function autocomplete()
     {
-        $term = $this->getRequest()->getQuery('q');
-        if ($this->getRequest()->is(['ajax', 'get']) && $term) {
-            $ret = '';
+        $term = $this->getRequest()->getQuery('term');
+        if ((Configure::read('debug') || $this->getRequest()->is(['ajax', 'get'])) && $term) {
+            $ret = [];
 
             // fire autocomplete with at least 2 characters
             if (strlen($term) > 1) {
@@ -343,11 +344,11 @@ class ProfilesController extends AppController
                     ->all();
 
                 foreach ($profiles as $p) {
-                    //$ret[] = ['label' => $p->d_n, 'value' => $p->id];
-                    $ret .= $p->id . '|' . h($p->d_n) . chr(10);
+                    $ret[] = ['label' => $p->d_n, 'value' => $p->id];
+                    //$ret .= $p->id . '|' . h($p->d_n) . chr(10);
                 }
             }
-            $this->response = $this->response->withStringBody($ret);
+            $this->response = $this->response->withStringBody(json_encode($ret));
 
             return $this->response;
         } else {

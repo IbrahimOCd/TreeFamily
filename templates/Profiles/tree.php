@@ -16,7 +16,7 @@
 	<?php echo $this->Html->css('tree') . PHP_EOL; ?>
 
 	<?php echo $this->Html->script('jquery.min') . PHP_EOL; ?>
-	<?php echo $this->Html->script('jquery.disable.text.select') . PHP_EOL; ?>
+	<?php echo $this->Html->script('jquery-ui-personalized.min') . PHP_EOL; ?>
 </head>
 <body>
 <?php
@@ -370,7 +370,7 @@
 					var body = document.getElementsByTagName("body")[0];
 					sel.collapse(body, 0);
 				}
-				$('#tree_window').disableTextSelect();
+				$('#tree_window').disableSelection();
 
 				<?php
 					if ($highlightedProfile = $this->getRequest()->getQuery('highlight')) {

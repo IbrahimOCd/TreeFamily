@@ -121,11 +121,12 @@ if (!empty($attachment->description)) {
     echo '</div>';
     echo $this->Form->end();
 
-    echo $this->Html->script('jquery.imgareaselect-0.8.min');
+    echo $this->Html->script('jquery.imgareaselect.js');
     echo $this->Html->script('jquery.imgnotes-0.2');
 
-    echo $this->Html->script('ui.core');
-    echo $this->Html->script('ui.autocomplete');
+    //echo $this->Html->script('ui.core');
+    //echo $this->Html->script('ui.autocomplete');
+    echo $this->Html->script('jquery-ui-personalized.min');
     echo $this->Html->css('imgnotes');
     echo $this->Html->css('ui.all');
     ?>
@@ -147,7 +148,7 @@ if (!empty($attachment->description)) {
 
     $(document).ready(function() {
         $('#ImgnoteNote').autocomplete({
-            url: '<?= $this->Url->build(['controller' => 'Profiles', 'action' => 'autocomplete']) ?>',
+            source: '<?= $this->Url->build(['controller' => 'Profiles', 'action' => 'autocomplete']) ?>',
             dataType: "text",
             width: "240px",
             formatResult: function(row) {
@@ -178,7 +179,7 @@ if (!empty($attachment->description)) {
             $('#NoteForm').hide();
         });
 
-        $('#AddNoteLink').click(function() {
+        $('#AddNoteLink').click(function(e) {
             <?php
                 $large_sizes = $attachment->getImageSize('large');
 
@@ -191,16 +192,19 @@ if (!empty($attachment->description)) {
                 $y1 = round($large_sizes['height'] / 2 - $h / 2);
                 $y2 = $y1 + $h;
 
-                printf('var frame = {onSelectChange: ShowAddNote, handles: true, x1:%1$s, x2:%2$s, y1:%3$s, y2:%4$s, width:%5$s, height:%6$s};', $x1, $x2, $y1, $y2, $w, $h).PHP_EOL;
+                printf('var frame = {onSelectChange: ShowAddNote, handles: true, x1:%1$s, x2:%2$s, y1:%3$s, y2:%4$s, width:%5$s, height:%6$s};', $x1, $x2, $y1, $y2, $w, $h) . PHP_EOL;
             ?>
+
             ShowAddNote('#AttachmentImage', frame);
 
             $('#NoteForm').show();
-            $('#AttachmentImage').imgAreaSelect(frame);
+            $("#AttachmentImage").imgAreaSelect(frame);
 
             <?php
                 }
             ?>
+
+            e.preventDefault();
 
             return false;
         });

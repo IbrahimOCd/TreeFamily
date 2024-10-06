@@ -3,7 +3,7 @@
 ?>
 <h1><?= __('Reorder Children') ?></h1>
 <?php
-    echo $this->Html->script('jquery-ui-personalized-1.6rc6.min');
+    echo $this->Html->script('jquery-ui-personalized.min');
 ?>
 <style type="text/css">
     .sortable { margin: 0; padding: 0; width: 60%; margin-bottom: 0; }
