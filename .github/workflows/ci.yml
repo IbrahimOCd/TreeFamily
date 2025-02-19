@@ -1,126 +1,13 @@
-name: CI
+name: Deploy Famiree
 
 on:
   push:
     branches:
-      - '*'
-  pull_request:
-    branches:
-      - '*'
+      - main
 
 jobs:
-  testsuite:
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version: ['8.1']
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup MySQL
-      uses: mirromutth/mysql-action@v1.1
-      with:
-        mysql version: 5.7
-        mysql database: test_myapp
-        mysql user: my_app
-        mysql password: secret
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-version }}
-        extensions: mbstring, intl
-        coverage: pcov
-        ini-values: session.save_path=/tmp
-
-    - name: Get composer cache directory
-      id: composer-cache
-      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-    - name: Get date part for cache key
-      id: key-date
-      run: echo "date=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
-
-    - name: Cache composer dependencies
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ steps.key-date.outputs.date }}-${{ hashFiles('composer.json') }}
-
-    - name: Composer Install
-      run: |
-        if ${{ matrix.php-version == '8.1' }}; then
-          composer update --ignore-platform-reqs
-        else
-          composer update
-        fi
-
-    - name: Execute post install cmd
-      run: composer run-script post-install-cmd --no-interaction
-
-    - name: Setup problem matchers for PHPUnit
-      if: matrix.php-version == '8.1'
-      run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-
-    - name: Run PHPUnit
-      run: |
-        if [[ ${{ matrix.php-version }} == '8.1' ]]; then
-          export CODECOVERAGE=1 && php -dpcov.enabled=1 -dpcov.directory=. vendor/bin/phpunit --coverage-clover=coverage.xml
-        else
-          vendor/bin/phpunit
-        fi
-    - name: Submit code coverage
-      if: matrix.php-version == '8.1'
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }} # required
-
-
-  cs-stan:
-    name: Coding Standard & Static Analysis
-    runs-on: ubuntu-20.04
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.1'
-        extensions: mbstring, intl
-        tools: cs2pr
-        coverage: none
-
-    - name: Get composer cache directory
-      id: composer-cache
-      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-    - name: Get date part for cache key
-      id: key-date
-      run: echo "date=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
-
-    - name: Cache composer dependencies
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ steps.key-date.outputs.date }}-${{ hashFiles('composer.json') }}
-
-    - name: Composer Install
-      run: |
-        composer update
-
-    - name: Run PHP CodeSniffer
-      run: vendor/bin/phpcs --report=checkstyle | cs2pr
-
-    - name: Run phpstan
-      if: success() || failure()
-      run: vendor/bin/phpstan.phar analyse --error-format=github
-        deploy:
-    needs: [testsuite, cs-stan]  # This ensures deployment only runs after tests pass
+  deploy:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
       
@@ -128,15 +15,19 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-          extensions: mbstring, intl
+          extensions: mbstring, intl, mysql
           
-      - name: Build application
+      - name: Install Dependencies
+        run: composer install --no-dev --optimize-autoloader
+        
+      - name: Setup Application
         run: |
-          composer install --no-dev
-          # Add any build steps your application needs
+          cp config/app.php.default config/app.php
           
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: 📂 Deploy to InfinityFree
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./webroot  # Adjust this to your public directory
+          server: ftpupload.net
+          username: ${{ if0_38351075! }}
+          password: ${{ Z1uyqFSkUIoVNV  }}
+          server-dir: /htdocs/
