@@ -3,7 +3,8 @@ name: Deploy Famiree
 on:
   push:
     branches:
-      - main
+      - main  # or master, depending on your default branch
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -15,19 +16,32 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-          extensions: mbstring, intl, mysql
+          extensions: mbstring, intl, mysql, zip
           
-      - name: Install Dependencies
-        run: composer install --no-dev --optimize-autoloader
-        
-      - name: Setup Application
+      - name: Install Composer Dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+          
+      - name: Configure Application
         run: |
           cp config/app.php.default config/app.php
+          # Configure database settings if needed
           
-      - name: 📂 Deploy to InfinityFree
+      - name: Set permissions
+        run: |
+          chmod -R 755 tmp/
+          chmod -R 755 logs/
+          chmod -R 755 webroot/img/
+          
+      - name: Deploy to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ftpupload.net
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /htdocs/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/tests/**
+            **/vendor/**
