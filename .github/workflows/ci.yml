@@ -117,3 +117,26 @@ jobs:
     - name: Run phpstan
       if: success() || failure()
       run: vendor/bin/phpstan.phar analyse --error-format=github
+        deploy:
+    needs: [testsuite, cs-stan]  # This ensures deployment only runs after tests pass
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, intl
+          
+      - name: Build application
+        run: |
+          composer install --no-dev
+          # Add any build steps your application needs
+          
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./webroot  # Adjust this to your public directory
